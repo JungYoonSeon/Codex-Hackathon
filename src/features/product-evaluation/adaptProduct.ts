@@ -1,9 +1,11 @@
+import { normalizeRetailerEvidence } from './retailerEvidence.ts';
 import { evidenceLabels } from '../../../shared/home-profile.ts';
 import type { Evidence } from '../../../shared/home-profile.ts';
 import type { EvaluationProduct, Money } from '../../../shared/product-evaluation.ts';
 /** Reads existing DiscoveryProduct plus optional enrichment; never edits that contract. */
 export function adaptDiscoveryProduct(raw: any): EvaluationProduct {
   if(!raw||typeof raw.id!=='string'||typeof raw.name!=='string')throw new Error('상품 ID와 이름이 필요합니다.');
+  raw=normalizeRetailerEvidence(raw);
   const demo=raw.dataMode==='demo'||raw.dimensionSource==='fictional-demo';
   const provenance=raw.evidence && typeof raw.evidence==='object'?raw.evidence:{};
   function fact<T>(value:T|undefined,path:string):Evidence<T>|undefined{

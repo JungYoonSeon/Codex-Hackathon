@@ -44,3 +44,7 @@ OpenAI implementation reference: https://developers.openai.com/api/docs/guides/s
 Modified integration files: root App, HomeScreen, RoomCard, shared UI palette, photo/dimensions/request/results flow screens, preview live upload adapter, server app/index. Added room and style feature modules and the style endpoint. Retailer provider and product-search files are not edited, so the retailer-data branch can be merged independently; still review the common server app/index entry points when integrating other work.
 
 No new automated test files were added. Use the actual sample path to review the entire frontend without paid generation. Native device storage/camera and real OpenAI generation still require a target-device/live-credentials check.
+
+## Retailer branch merge
+
+`origin/feature/retailer-data` is merged into this feature branch. `retailerEvidence.ts` bridges its evidence arrays, shipping length/quantity/count, materials and care into the evaluator. Conflicting package facts remain confirmation-needed. Destination-dependent delivery stays unknown. IKEA records are verified snapshots, not live search or preview-enabled products. Main remains unchanged.
