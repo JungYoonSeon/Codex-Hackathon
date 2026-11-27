@@ -1,0 +1,847 @@
+{
+  "schema": "roomready.discovery-product/0.1-draft",
+  "note": "Verified snapshots: extracted from public IKEA Korea product pages (structured data + measurement/packaging tables) on retrievedAt and reviewed by a person. Retailer-reported values, not physical measurements. Not live data: re-check price before use.",
+  "records": [
+    {
+      "id": "ikea:kr:10489009",
+      "name": "GLOSTAD 글로스타드 2인용소파 - 크니사 다크그레이",
+      "brand": "IKEA",
+      "category": "sofa",
+      "source": "ikea",
+      "sourceLabel": "IKEA KR · 검증 스냅샷 2026-11-27",
+      "dataMode": "verified_snapshot",
+      "description": "",
+      "tags": [
+        "그레이"
+      ],
+      "productUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+      "imageUrl": "https://www.ikea.com/kr/ko/images/products/glostad-2-seat-sofa-knisa-dark-grey__1577178_pe1033002_s5.jpg",
+      "price": {
+        "amount": 150000,
+        "currency": "KRW"
+      },
+      "dimensions": {
+        "widthCm": 121,
+        "depthCm": 78
+      },
+      "identity": {
+        "retailer": "ikea",
+        "market": "KR",
+        "retailerProductId": "10489009",
+        "articleNumber": "104.890.09",
+        "itemType": "ART",
+        "variant": {
+          "description": "크니사 다크그레이",
+          "color": "그레이"
+        }
+      },
+      "seller": {
+        "name": "IKEA",
+        "isBrandOwner": true
+      },
+      "detailedDimensions": {
+        "seatWidthCm": 114,
+        "seatDepthCm": 54,
+        "seatHeightCm": 41,
+        "armrestHeightCm": 57,
+        "armrestWidthCm": 3.5,
+        "backrestHeightCm": 68
+      },
+      "packages": [
+        {
+          "quantity": 1,
+          "articleNumber": "104.890.09",
+          "description": "GLOSTAD 글로스타드 2인용소파",
+          "widthCm": 66,
+          "heightCm": 21,
+          "lengthCm": 118,
+          "weightKg": 20.15
+        }
+      ],
+      "packageCount": 1,
+      "delivery": {
+        "status": "not_checked",
+        "shipsToCountry": "KR"
+      },
+      "materials": [
+        {
+          "part": "패브릭",
+          "material": "폴리에스테르 100%(최소 90% 재활용)"
+        },
+        {
+          "part": "등받이 프레임/ 팔걸이",
+          "material": "스틸, 에폭시/폴리에스테르 파우더코팅"
+        },
+        {
+          "part": "시트 프레임",
+          "material": "합판, 라미네이트 무늬목, 스틸"
+        },
+        {
+          "part": "시트",
+          "material": "폴리우레탄 폼 25kg/cu.m., 펠트 라이너"
+        },
+        {
+          "part": "등받이 쿠션",
+          "material": "100 % 폴리에스터 -할로우 화이버(100% 재활용), 폴리우레탄 폼"
+        }
+      ],
+      "care": [
+        {
+          "part": "프레임, 고정커버",
+          "instructions": [
+            "진공청소기를 사용하세요.",
+            "젖은 천으로 닦아주세요."
+          ]
+        }
+      ],
+      "groundClearanceCm": 23,
+      "evidence": [
+        {
+          "field": "name",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "schema.org Product.name",
+          "originalValue": "GLOSTAD 글로스타드 2인용소파 - 크니사 다크그레이"
+        },
+        {
+          "field": "identity.articleNumber",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "schema.org Product.mpn",
+          "originalValue": "104.890.09"
+        },
+        {
+          "field": "brand",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "schema.org Product.brand",
+          "originalValue": "IKEA"
+        },
+        {
+          "field": "seller.name",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "schema.org Offer.seller",
+          "originalValue": "IKEA"
+        },
+        {
+          "field": "price",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "schema.org Offer.price/priceCurrency",
+          "originalValue": "150000 KRW",
+          "note": "Price in KR at retrieval time; may change."
+        },
+        {
+          "field": "dimensions.widthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "폭",
+          "originalValue": "121 cm"
+        },
+        {
+          "field": "dimensions.widthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "schema.org Product.width",
+          "originalValue": "121 cm"
+        },
+        {
+          "field": "dimensions.depthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "깊이",
+          "originalValue": "78 cm"
+        },
+        {
+          "field": "dimensions.depthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "schema.org Product.depth",
+          "originalValue": "78 cm"
+        },
+        {
+          "field": "detailedDimensions.seatWidthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "시트 폭",
+          "originalValue": "114 cm"
+        },
+        {
+          "field": "detailedDimensions.seatDepthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "시트 깊이",
+          "originalValue": "54 cm"
+        },
+        {
+          "field": "detailedDimensions.seatHeightCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "시트 높이",
+          "originalValue": "41 cm"
+        },
+        {
+          "field": "detailedDimensions.armrestHeightCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "팔걸이 높이",
+          "originalValue": "57 cm"
+        },
+        {
+          "field": "detailedDimensions.armrestWidthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "팔걸이 너비",
+          "originalValue": "3.5 cm"
+        },
+        {
+          "field": "detailedDimensions.backrestHeightCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "등받이H",
+          "originalValue": "68 cm"
+        },
+        {
+          "field": "groundClearanceCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "가구 밑 여유공간",
+          "originalValue": "23 cm"
+        },
+        {
+          "field": "packages[0].quantity",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "포장: 패키지",
+          "originalValue": "1"
+        },
+        {
+          "field": "packages[0].widthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "포장: 폭",
+          "originalValue": "66 cm"
+        },
+        {
+          "field": "packages[0].heightCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "포장: 높이",
+          "originalValue": "21 cm"
+        },
+        {
+          "field": "packages[0].lengthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "포장: 길이",
+          "originalValue": "118 cm"
+        },
+        {
+          "field": "packages[0].weightKg",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "포장: 무게",
+          "originalValue": "20.15 kg"
+        },
+        {
+          "field": "packageCount",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "포장: 패키지 수",
+          "originalValue": "1"
+        },
+        {
+          "field": "materials",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "소재 및 관리: 소재",
+          "originalValue": "패브릭: 폴리에스테르 100%(최소 90% 재활용) / 등받이 프레임/ 팔걸이: 스틸, 에폭시/폴리에스테르 파우더코팅 / 시트 프레임: 합판, 라미네이트 무늬목, 스틸 / 시트: 폴리우레탄 폼 25kg/cu.m., 펠트 라이너 / 등받이 쿠션: 100 % 폴리에스터 -할로우 화이버(100% 재활용), 폴리우레탄 폼"
+        },
+        {
+          "field": "care",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "소재 및 관리: 제품관리",
+          "originalValue": "프레임, 고정커버: 진공청소기를 사용하세요. 젖은 천으로 닦아주세요."
+        },
+        {
+          "field": "delivery.shipsToCountry",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "104.890.09",
+          "method": "public_page_structured_data",
+          "sourceLabel": "schema.org OfferShippingDetails.shippingDestination",
+          "originalValue": "KR"
+        }
+      ],
+      "conflicts": [
+        {
+          "field": "packages",
+          "values": [
+            {
+              "value": "115 cm, 65 cm, 20 kg",
+              "sourceLabel": "product description text (approximate wording)",
+              "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/"
+            },
+            {
+              "value": "66×21×118 cm, 20.15 kg",
+              "sourceLabel": "packaging measurement table",
+              "sourceUrl": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/"
+            }
+          ],
+          "note": "Description gives approximate package figures; the measurement-table values are kept in packages. Confirm before relying on exact package size."
+        }
+      ],
+      "missingFields": [
+        {
+          "field": "dimensions.heightCm",
+          "reason": "not_published"
+        },
+        {
+          "field": "storageCapacityLiters",
+          "reason": "not_published",
+          "note": "No storage capacity is stated on the product page."
+        },
+        {
+          "field": "delivery.options",
+          "reason": "not_published",
+          "note": "Delivery cost and timing are not on the product page and were not checked for any destination."
+        }
+      ],
+      "retrievedAt": "2026-11-27T06:29:07Z"
+    },
+    {
+      "id": "ikea:kr:s49010615",
+      "name": "KLIPPAN 클리판 2인용소파 - 비슬레 그레이",
+      "brand": "IKEA",
+      "category": "sofa",
+      "source": "ikea",
+      "sourceLabel": "IKEA KR · 검증 스냅샷 2026-11-27",
+      "dataMode": "verified_snapshot",
+      "description": "",
+      "tags": [
+        "그레이"
+      ],
+      "productUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+      "imageUrl": "https://www.ikea.com/kr/ko/images/products/klippan-2-seat-sofa-vissle-grey__1576907_pe1032801_s5.jpg",
+      "price": {
+        "amount": 299000,
+        "currency": "KRW"
+      },
+      "dimensions": {
+        "widthCm": 180,
+        "depthCm": 88,
+        "heightCm": 66
+      },
+      "identity": {
+        "retailer": "ikea",
+        "market": "KR",
+        "retailerProductId": "s49010615",
+        "articleNumber": "490.106.15",
+        "itemType": "SPR",
+        "variant": {
+          "description": "비슬레 그레이",
+          "color": "그레이"
+        }
+      },
+      "seller": {
+        "name": "IKEA",
+        "isBrandOwner": true
+      },
+      "detailedDimensions": {
+        "seatDepthCm": 54,
+        "seatHeightCm": 43
+      },
+      "packages": [
+        {
+          "quantity": 1,
+          "articleNumber": "101.605.35",
+          "description": "KLIPPAN 클리판 2인용 소파 프레임",
+          "widthCm": 89,
+          "heightCm": 35,
+          "lengthCm": 181,
+          "weightKg": 45.44
+        },
+        {
+          "quantity": 1,
+          "articleNumber": "002.788.56",
+          "description": "KLIPPAN 클리판 2인용소파커버",
+          "widthCm": 37,
+          "heightCm": 4,
+          "lengthCm": 57,
+          "weightKg": 2.18
+        }
+      ],
+      "packageCount": 2,
+      "delivery": {
+        "status": "not_checked",
+        "shipsToCountry": "KR"
+      },
+      "materials": [
+        {
+          "part": "2인용 소파 프레임 · 프레임",
+          "material": "합판, 파티클보드, 섬유판, 라미네이트 무늬목"
+        },
+        {
+          "part": "2인용 소파 프레임 · 내장재",
+          "material": "폴리에스테르 중공섬유 충전재, 폴리우레탄 폼 30kg/cu.m."
+        },
+        {
+          "part": "2인용 소파 프레임 · 안감",
+          "material": "폴리프로필렌 100%"
+        },
+        {
+          "part": "2인용 소파 프레임 · 다리",
+          "material": "스틸, 에폭시/폴리에스테르 파우더코팅, 폴리프로필렌 플라스틱"
+        },
+        {
+          "part": "2인용소파커버",
+          "material": "폴리에스테르 100%(최소 90% 재활용)"
+        }
+      ],
+      "care": [
+        {
+          "part": "프레임",
+          "instructions": [
+            "마른 수건이나 부드러운 천으로 닦아주세요."
+          ]
+        },
+        {
+          "part": "탈부착커버",
+          "instructions": [
+            "세탁기 사용 가능, 최대 40°C, 표준 코스",
+            "단독세탁",
+            "표백하지 마세요.",
+            "건조기에 넣지 마세요.",
+            "다림질, 최대 150°C.",
+            "드라이클리닝, 표준 코스."
+          ]
+        }
+      ],
+      "groundClearanceCm": 11,
+      "evidence": [
+        {
+          "field": "name",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "schema.org Product.name",
+          "originalValue": "KLIPPAN 클리판 2인용소파 - 비슬레 그레이"
+        },
+        {
+          "field": "identity.articleNumber",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "schema.org Product.mpn",
+          "originalValue": "490.106.15"
+        },
+        {
+          "field": "brand",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "schema.org Product.brand",
+          "originalValue": "IKEA"
+        },
+        {
+          "field": "seller.name",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "schema.org Offer.seller",
+          "originalValue": "IKEA"
+        },
+        {
+          "field": "price",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "schema.org Offer.price/priceCurrency",
+          "originalValue": "299000 KRW",
+          "note": "Price in KR at retrieval time; may change."
+        },
+        {
+          "field": "dimensions.widthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "폭",
+          "originalValue": "180 cm"
+        },
+        {
+          "field": "dimensions.widthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "schema.org Product.width",
+          "originalValue": "180 cm"
+        },
+        {
+          "field": "dimensions.depthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "깊이",
+          "originalValue": "88 cm"
+        },
+        {
+          "field": "dimensions.depthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "schema.org Product.depth",
+          "originalValue": "88 cm"
+        },
+        {
+          "field": "dimensions.heightCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "높이",
+          "originalValue": "66 cm"
+        },
+        {
+          "field": "dimensions.heightCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "schema.org Product.height",
+          "originalValue": "66 cm"
+        },
+        {
+          "field": "detailedDimensions.seatDepthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "시트 깊이",
+          "originalValue": "54 cm"
+        },
+        {
+          "field": "detailedDimensions.seatHeightCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "시트 높이",
+          "originalValue": "43 cm"
+        },
+        {
+          "field": "groundClearanceCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "가구 밑 여유공간",
+          "originalValue": "11 cm"
+        },
+        {
+          "field": "packages[0].quantity",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "포장: 패키지",
+          "originalValue": "1"
+        },
+        {
+          "field": "packages[0].widthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "포장: 폭",
+          "originalValue": "89 cm"
+        },
+        {
+          "field": "packages[0].heightCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "포장: 높이",
+          "originalValue": "35 cm"
+        },
+        {
+          "field": "packages[0].lengthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "포장: 길이",
+          "originalValue": "181 cm"
+        },
+        {
+          "field": "packages[0].weightKg",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "포장: 무게",
+          "originalValue": "45.44 kg"
+        },
+        {
+          "field": "packages[1].quantity",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "포장: 패키지",
+          "originalValue": "1"
+        },
+        {
+          "field": "packages[1].widthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "포장: 폭",
+          "originalValue": "37 cm"
+        },
+        {
+          "field": "packages[1].heightCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "포장: 높이",
+          "originalValue": "4 cm"
+        },
+        {
+          "field": "packages[1].lengthCm",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "포장: 길이",
+          "originalValue": "57 cm"
+        },
+        {
+          "field": "packages[1].weightKg",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "포장: 무게",
+          "originalValue": "2.18 kg"
+        },
+        {
+          "field": "packageCount",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "포장: 패키지 수",
+          "originalValue": "2"
+        },
+        {
+          "field": "materials",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "소재 및 관리: 소재",
+          "originalValue": "2인용 소파 프레임 · 프레임: 합판, 파티클보드, 섬유판, 라미네이트 무늬목 / 2인용 소파 프레임 · 내장재: 폴리에스테르 중공섬유 충전재, 폴리우레탄 폼 30kg/cu.m. / 2인용 소파 프레임 · 안감: 폴리프로필렌 100% / 2인용 소파 프레임 · 다리: 스틸, 에폭시/폴리에스테르 파우더코팅, 폴리프로필렌 플라스틱 / 2인용소파커버: 폴리에스테르 100%(최소 90% 재활용)"
+        },
+        {
+          "field": "care",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "소재 및 관리: 제품관리",
+          "originalValue": "프레임: 마른 수건이나 부드러운 천으로 닦아주세요. / 탈부착커버: 세탁기 사용 가능, 최대 40°C, 표준 코스 단독세탁 표백하지 마세요. 건조기에 넣지 마세요. 다림질, 최대 150°C. 드라이클리닝, 표준 코스."
+        },
+        {
+          "field": "delivery.shipsToCountry",
+          "status": "retailer_reported",
+          "sourceUrl": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-vissle-grey-s49010615/",
+          "retrievedAt": "2026-11-27T06:29:07Z",
+          "market": "KR",
+          "variantId": "490.106.15",
+          "method": "public_page_structured_data",
+          "sourceLabel": "schema.org OfferShippingDetails.shippingDestination",
+          "originalValue": "KR"
+        }
+      ],
+      "missingFields": [
+        {
+          "field": "storageCapacityLiters",
+          "reason": "not_published",
+          "note": "No storage capacity is stated on the product page."
+        },
+        {
+          "field": "delivery.options",
+          "reason": "not_published",
+          "note": "Delivery cost and timing are not on the product page and were not checked for any destination."
+        }
+      ],
+      "retrievedAt": "2026-11-27T06:29:07Z"
+    }
+  ]
+}

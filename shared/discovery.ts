@@ -15,22 +15,149 @@ export const productCategories = [
   { id: 'other', label: '기타', query: 'home furniture', icon: '✨' },
 ] as const;
 export type ProductCategory = Exclude<typeof productCategories[number]['id'], 'all'>;
-export type ProductSource = 'demo' | 'amazon' | 'ebay' | 'ikea';
+export type ProductSource = 'demo' | 'amazon' | 'ebay' | 'ikea' | 'coupang';
+/**
+ * 'verified_snapshot': a retailer record captured once from a public product page and reviewed by a person.
+ * It is NOT a live connector result; check `retrievedAt` for staleness.
+ */
+export type DataMode = 'demo' | 'live' | 'feed' | 'verified_snapshot';
 export interface DiscoveryProduct {
+  /** Stable identity. Existing formats are unchanged; new retailer records use `<retailer>:<market>:<retailerProductId>`. */
   id: string; name: string; brand?: string; category: ProductCategory;
-  source: ProductSource; sourceLabel: string; dataMode: 'demo' | 'live' | 'feed';
+  source: ProductSource; sourceLabel: string; dataMode: DataMode;
   description: string; tags: string[]; imageUrl?: string; productUrl?: string;
-  price?: { amount: number; currency: string };
+  price?: Money;
+  /** Assembled product size, normalized to centimetres. Never shipping-package size. */
   dimensions?: { widthCm?: number; depthCm?: number; heightCm?: number };
   /** Only existing, server-owned references can use the current preview endpoint. */
   previewOptionId?: string;
   matchReason?: string;
+
+  // ---- DRAFT additive fields (retailer data v0.1). Pending agreement with 윤선's evaluator. ----
+  // Missing-value convention: a value that is unknown is OMITTED (never 0, '' or a guess) and is listed
+  // in `missingFields` with a reason. Unknown never means false. Consumers must treat absence as "needs confirmation".
+  identity?: RetailerIdentity;
+  /** Who sells the offer, when it can differ from the product brand (marketplaces). */
+  seller?: { name: string; isBrandOwner?: boolean };
+  /** Additional assembled measurements as published (cm). */
+  detailedDimensions?: DetailedDimensions;
+  /** Shipping packages exactly as published. Separate from assembled `dimensions`. */
+  packages?: ShippingPackage[];
+  /** Number of physical packages the retailer states for one unit, when published. */
+  packageCount?: number;
+  delivery?: DeliveryInfo;
+  materials?: ProductMaterial[];
+  care?: ProductCare[];
+  /** Clear space under the furniture (cm), as published. */
+  groundClearanceCm?: number;
+  storageCapacityLiters?: number;
+  /** Field-level provenance. Every important value above should have at least one entry. */
+  evidence?: FieldEvidence[];
+  /** Sources disagree. Both values are kept; nothing is silently chosen. */
+  conflicts?: FieldConflict[];
+  missingFields?: MissingField[];
+  /** When the underlying source data was retrieved (ISO-8601 UTC). */
+  retrievedAt?: string;
 }
+
+export interface Money { amount: number; currency: string }
+
+export interface RetailerIdentity {
+  retailer: Exclude<ProductSource, 'demo'>;
+  /** ISO 3166-1 alpha-2 market, e.g. 'KR'. Prices, delivery and IDs are only valid in this market. */
+  market: string;
+  /** Retailer's stable product/variant identifier as used in its URLs, e.g. IKEA '10489009' or 's49010615'. */
+  retailerProductId: string;
+  /** Human-facing article/SKU number, e.g. '104.890.09'. */
+  articleNumber?: string;
+  /** Retailer item type, e.g. IKEA 'ART' (single article) or 'SPR' (combination of articles). */
+  itemType?: string;
+  /** Variant attributes that distinguish this record from siblings (colour, cover, size). */
+  variant?: Record<string, string>;
+}
+
+export interface DetailedDimensions {
+  seatWidthCm?: number; seatDepthCm?: number; seatHeightCm?: number;
+  armrestHeightCm?: number; armrestWidthCm?: number; backrestHeightCm?: number;
+}
+
+export interface ShippingPackage {
+  /** Article contained in this package, when published. */
+  articleNumber?: string;
+  description?: string;
+  /** Number of identical packages of this kind per purchased unit. */
+  quantity: number;
+  widthCm?: number; heightCm?: number; lengthCm?: number; weightKg?: number;
+}
+
+export interface DeliveryInfo {
+  /**
+   * 'not_checked': nothing about delivery was verified.
+   * 'destination_required': the retailer needs an address/postcode before quoting.
+   * 'quoted': a quote was obtained for `destination` at `checkedAt` (valid only for that place/time).
+   */
+  status: 'not_checked' | 'destination_required' | 'quoted';
+  /** Country the offer states it ships to, when published. */
+  shipsToCountry?: string;
+  destination?: { country: string; postalCode?: string };
+  checkedAt?: string;
+  options?: { method: string; price?: Money; estimate?: string }[];
+}
+
+export interface ProductMaterial { part?: string; material: string }
+export interface ProductCare { part?: string; instructions: string[] }
+
+export type VerificationStatus =
+  | 'retailer_reported'      // published by the retailer; not physically measured by us
+  | 'independently_checked'  // confirmed against a second independent source or measurement
+  | 'derived'                // computed from other fields (see derivedFrom)
+  | 'unverified';            // captured but not reviewed
+export type ExtractionMethod =
+  | 'official_api' | 'authorized_feed' | 'public_page_structured_data' | 'manual_entry' | 'derived';
+
+export interface FieldEvidence {
+  /** Dotted path in this record, e.g. 'packages[1].weightKg' or 'groundClearanceCm'. */
+  field: string;
+  status: VerificationStatus;
+  method: ExtractionMethod;
+  sourceUrl: string;
+  retrievedAt: string;
+  market?: string;
+  /** Retailer variant the value belongs to (e.g. article number). */
+  variantId?: string;
+  /** Label as published, e.g. '가구 밑 여유공간'. */
+  sourceLabel?: string;
+  /** Value exactly as published, including the original unit, e.g. '23 cm'. */
+  originalValue?: string;
+  /** For derived values: the fields they were computed from. */
+  derivedFrom?: string[];
+  note?: string;
+}
+
+export interface FieldConflict {
+  field: string;
+  values: { value: string; sourceLabel: string; sourceUrl: string }[];
+  note?: string;
+}
+
+export type MissingReason =
+  | 'not_published'        // the source does not state it
+  | 'not_applicable'       // the source states it does not apply
+  | 'destination_required' // depends on an address/time we did not supply
+  | 'access_blocked'       // the source could not be accessed
+  | 'conflicting_sources'  // sources disagree; see `conflicts` (no value is chosen)
+  | 'not_extracted';       // published but not captured by this version
+export interface MissingField { field: string; reason: MissingReason; note?: string }
 export interface ProductSearch {
   q: string; brand: string; category: 'all' | ProductCategory;
   source: 'all' | ProductSource; sort: 'relevance' | 'price-asc' | 'price-desc'; page: number;
 }
-export interface SourceStatus { source: ProductSource; status: 'ready' | 'not-configured' | 'error'; message: string }
+export type SourceProblem = 'access-denied' | 'rate-limited' | 'timeout' | 'network' | 'parse' | 'no-results' | 'unavailable';
+export interface SourceStatus {
+  source: ProductSource; status: 'ready' | 'not-configured' | 'error'; message: string;
+  /** DRAFT: machine-readable cause for non-ready states, and 'snapshot' when only verified snapshots are served. */
+  reason?: SourceProblem | 'snapshot';
+}
 export interface ProductSearchResult {
   products: DiscoveryProduct[]; sources: SourceStatus[]; page: number; hasMore: boolean;
   links: { source: ProductSource; label: string; url: string }[];
@@ -63,6 +190,8 @@ export function retailerLinks(input: Pick<ProductSearch, 'q' | 'brand' | 'catego
   const query = [input.brand, input.q, input.category === 'all' && input.q ? '' : category].filter(Boolean).join(' ');
   return [
     { source: 'ikea', label: 'IKEA 공식 사이트에서 검색', url: `https://www.ikea.com/kr/ko/search/?q=${encodeURIComponent(query)}` },
+    // Outbound search link only; this is not a Coupang data connector.
+    { source: 'coupang', label: '쿠팡에서 검색', url: `https://www.coupang.com/np/search?q=${encodeURIComponent(query)}` },
     { source: 'amazon', label: 'Amazon에서 검색', url: `https://www.amazon.com/s?k=${encodeURIComponent(query)}` },
     { source: 'ebay', label: 'eBay에서 검색', url: `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(query)}` },
   ];
