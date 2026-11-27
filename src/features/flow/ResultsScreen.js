@@ -9,7 +9,7 @@ import { SAVED_EXAMPLE_LABEL } from '../preview/savedExampleService.js';
 const LETTERS = ['A', 'B'];
 
 /** Step 4: candidate cards and per-option Original / Furnished comparison. */
-export function ResultsScreen({ state, onRetry, onRunAgain, onEditRequest, onStartAgain, onUseSample, onRestoreSample }) {
+export function ResultsScreen({ state, onRetry, onRunAgain, onEditRequest, onStartAgain, onUseSample, onRestoreSample, onCompare, onRoom, readOnly = false }) {
   const busy = isBusy(state);
   const saved = state.mode === 'saved_demo';
   const total = state.candidates.length;
@@ -17,7 +17,7 @@ export function ResultsScreen({ state, onRetry, onRunAgain, onEditRequest, onSta
 
   return (
     <Screen>
-      <Header onBack={onEditRequest} label="STEP 4 OF 4" />
+      <Header onBack={onEditRequest} label="VISUALIZE YOUR ROOM" />
       <Text style={ui.eyebrow}>{saved ? 'SAVED ILLUSTRATED EXAMPLES' : 'LIVE AI PREVIEWS'}</Text>
       <Text style={ui.title}>Your furniture options</Text>
       <Notice title={saved ? 'Saved illustrated examples — not live AI results' : 'Live AI previews'}>
@@ -33,7 +33,8 @@ export function ResultsScreen({ state, onRetry, onRunAgain, onEditRequest, onSta
         </View>
       ) : null}
 
-      {state.phase === 'error' && state.error ? (
+      {state.phase === 'error' && state.error && readOnly ? <Notice tone="warn">{state.error.message}</Notice> : null}
+      {state.phase === 'error' && state.error && !readOnly ? (
         <ErrorPanel error={state.error} saved={saved} onRunAgain={onRunAgain} onEditRequest={onEditRequest}
           onUseSample={onUseSample} onRestoreSample={onRestoreSample} />
       ) : null}
@@ -48,13 +49,15 @@ export function ResultsScreen({ state, onRetry, onRunAgain, onEditRequest, onSta
         <CandidateCard key={`${state.runId}-${candidate.id}`} candidate={candidate} letter={LETTERS[index] ?? String(index + 1)}
           index={index} total={total} result={state.results[candidate.id]} saved={saved}
           originalSource={photoImageSource(state.photo)} aspectRatio={aspectRatio}
-          retryDisabled={busy} onRetry={() => onRetry(candidate.id)} />
+          retryDisabled={busy || readOnly} onRetry={() => onRetry(candidate.id)} />
       ))}
 
       <Text style={[ui.hint, { marginVertical: 14 }]}>{VISUALIZATION_NOTICE}</Text>
       <View style={ui.stack}>
-        <Button title="Edit request" secondary onPress={onEditRequest} />
-        <Button title="Start again" secondary onPress={onStartAgain} />
+        {onCompare ? <Button title="Compare candidates · fit & reasons" onPress={onCompare} disabled={total < 2}/> : null}
+        {onRoom ? <Button title="Back to room" secondary onPress={onRoom}/> : null}
+        {!readOnly && <Button title="Edit request" secondary onPress={onEditRequest} />}
+        {!readOnly && <Button title="Start again" secondary onPress={onStartAgain} />}
       </View>
     </Screen>
   );

@@ -111,7 +111,13 @@ export function createLiveService({ apiOrigin, getToken, fetchImpl, createFormDa
         requestId, inputVersion, room: roomPayload(room), request: requestPayload(request), optionId: candidate.id,
       }));
       // React Native's FormData uploads the bytes behind this local file URI.
-      form.append('photo', { uri: photo.uri, type: 'image/jpeg', name: 'room.jpg' });
+      if (typeof document !== 'undefined') {
+        const photoResponse = await doFetch(photo.uri, { signal });
+        if (!photoResponse.ok) throw apiError('INVALID_INPUT', 'The saved room photo could not be read. Choose it again.', false);
+        form.append('photo', await photoResponse.blob(), 'room.jpg');
+      } else {
+        form.append('photo', { uri: photo.uri, type: 'image/jpeg', name: 'room.jpg' });
+      }
       const body = await call('/preview', { method: 'POST', headers, body: form }, limits.preview, {
         outerSignal: signal,
         timeoutError: apiError('PROVIDER_TIMEOUT', 'The preview took too long. You can retry this option.', true),

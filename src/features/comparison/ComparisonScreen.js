@@ -26,7 +26,7 @@ export function ComparisonScreen({left,right,home,roomPhoto,previewImages={},onB
     {roomPhoto?.source?<>
       <View style={s.row}><Chip title="원본 방 사진" selected={image==='original'} onPress={()=>{setImage('original');setImageError(false);}}/>{[left,right].filter(usable).map((p,i)=><Chip key={p.id} title={`${p.name} · ${previewImages[p.id].mode==='saved_demo'?'저장 예시':'AI 결과'}`} selected={image===p.id} onPress={()=>{setImage(p.id);setImageError(false);}}/>)}</View>
       {shown&&!imageError?<Image source={shown} resizeMode="contain" onError={()=>setImageError(true)} accessibilityLabel={image==='original'?'두 후보에 공통인 원본 방 사진':'선택한 후보의 같은 방 미리보기'} style={{width:'100%',height:230,borderRadius:14}}/>:<Text style={ui.errorText}>이미지를 표시할 수 없습니다.</Text>}
-      <Text style={s.small}>사진은 시각 참고용입니다. 통로·배송 수치는 아래의 측정 데이터로 별도 계산합니다. 같은 원본 사진 ID의 미리보기만 표시합니다.</Text>
+      <Text style={s.small}>사진은 시각 참고용입니다. 통로·배송 수치는 아래의 측정 데이터로 별도 계산합니다. 같은 원본 사진 ID의 미리보기만 표시합니다. 배치 좌표를 바꿔도 기존 합성 사진은 자동으로 바뀌지 않습니다.</Text>
     </>:<Notice>원본 방 사진을 전달하면 이곳에 표시합니다. 이 기능은 이미지를 생성하거나 사진에서 치수를 추출하지 않습니다.</Notice>}
     {(!usable(left)||!usable(right))&&<Text style={s.small}>후보별 방 합성 이미지가 아직 없거나 원본 사진이 다릅니다. 측정·상품 정보 비교는 계속할 수 있어요.</Text>}
     <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={{gap:12,paddingVertical:14}}>

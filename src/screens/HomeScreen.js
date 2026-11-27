@@ -3,12 +3,10 @@ import { Pressable, SafeAreaView, ScrollView, StatusBar, StyleSheet, View } from
 import AppText from '../components/AppText';
 import BrandLogo from '../components/BrandLogo';
 import BottomNavigation from '../components/BottomNavigation';
-import FurnitureCategoryCard from '../components/FurnitureCategoryCard';
 import RoomCard from '../components/RoomCard';
-import { HOME_CATEGORIES } from '../data/homeCategories';
 import { COLORS } from '../theme/colors';
 
-export default function HomeScreen({ onOpenPlanner, onOpenPhotoPicker, onNavigate }) {
+export default function HomeScreen({ rooms = [], onOpenPlanner, onEditRoom, onDeleteRoom, recommendations, onNavigate }) {
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
@@ -21,16 +19,10 @@ export default function HomeScreen({ onOpenPlanner, onOpenPhotoPicker, onNavigat
           </Pressable>
         </View>
         <View style={styles.roomList}>
-          <RoomCard title="Home Office" onPress={() => onOpenPlanner('Home Office')} />
-          <RoomCard title="Bedroom" onPress={() => onOpenPlanner('Bedroom')} />
+          {rooms.map(room => <View key={room.id}><RoomCard title={room.name} photo={room.photo} onPress={() => onOpenPlanner(room.id)} /><View style={{flexDirection:'row',gap:24,padding:10}}><Pressable accessibilityRole="button" onPress={() => onEditRoom(room.id)}><AppText>Rename / edit</AppText></Pressable><Pressable accessibilityRole="button" onPress={() => onDeleteRoom(room.id)}><AppText>Delete room</AppText></Pressable></View></View>)}
+          <Pressable accessibilityRole="button" onPress={() => onNavigate('create')} style={{padding:18}}><AppText>＋ Create another room</AppText></Pressable>
         </View>
-        <View style={styles.furnitureHeader}>
-          <AppText style={styles.heading}>Furniture for you!</AppText>
-          <AppText style={styles.subtitle}>Find the finishing touches for your space.</AppText>
-        </View>
-        <View style={styles.grid}>
-          {HOME_CATEGORIES.map((category) => <FurnitureCategoryCard key={category.id} category={category} onPress={onOpenPhotoPicker} />)}
-        </View>
+        {recommendations}
       </ScrollView>
       <BottomNavigation activeTab="home" onSelect={onNavigate} />
     </SafeAreaView>

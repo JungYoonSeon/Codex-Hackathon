@@ -2,10 +2,11 @@ import React, { useRef, useState } from 'react';
 import { ActivityIndicator, Image, Text, View } from 'react-native';
 import { Button, COLORS, Header, Notice, Screen, ui } from '../../ui.js';
 import { pickPhoto, preparePhoto } from '../preview/photo.js';
+import { Chip, s } from '../home-profile/components';
 import { photoImageSource } from '../preview/sampleScenario.js';
 
 /** Step 2: choose, replace or remove the room photo. Does not start generation. */
-export function PhotoScreen({ room, photo, onBack, onPhotoChange, onUseSample, onContinue }) {
+export function PhotoScreen({ room, photo, onBack, onPhotoChange, onUseSample, onContinue, focus = 'whole', onFocusChange = () => {}, onSkip }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(null);
   const busyRef = useRef(false);
@@ -19,7 +20,7 @@ export function PhotoScreen({ room, photo, onBack, onPhotoChange, onUseSample, o
       const picked = await pickPhoto({ camera });
       if (picked.status === 'canceled') return; // keep the existing photo, no error
       if (picked.status !== 'picked') { setMessage(picked.message); return; }
-      onPhotoChange(await preparePhoto(picked.asset));
+      await onPhotoChange(await preparePhoto(picked.asset));
     } finally {
       busyRef.current = false;
       setBusy(false);
@@ -30,7 +31,7 @@ export function PhotoScreen({ room, photo, onBack, onPhotoChange, onUseSample, o
 
   return (
     <Screen>
-      <Header onBack={onBack} label="STEP 2 OF 4" />
+      <Header onBack={onBack} label="ROOM PHOTO" />
       <Text style={ui.eyebrow}>YOUR ROOM PHOTO</Text>
       <Text style={ui.title}>{photo ? 'Your room photo' : 'Choose a room photo'}</Text>
       {room ? <Text style={[ui.hint, { marginTop: 8 }]}>Room: {formatRoom(room)}</Text> : null}
@@ -38,6 +39,12 @@ export function PhotoScreen({ room, photo, onBack, onPhotoChange, onUseSample, o
         Your photo stays on this phone until you ask for live previews. Then it is sent to the RoomReady demo server and OpenAI.
       </Text>
 
+      <Text style={ui.sectionTitle}>What would you like to change?</Text>
+      <View style={s.row}>{[['whole','Whole room'],['corner','One corner'],['wall','One wall']].map(([id,label])=><Chip key={id} title={label} selected={focus===id} onPress={()=>onFocusChange(id)}/>)}</View>
+      <Notice title="How to take a useful room photo">
+        {focus==='whole'?'Stand near a doorway or far corner. Include the floor and two walls so the room layout is visible.':focus==='corner'?'Face the corner you want to furnish. Include both adjoining walls, the floor, and nearby furniture for context.':'Face the target wall as straight-on as possible. Include the floor-wall edge and enough empty space around the intended furniture.'}
+        {'\n'}Use good light, keep the camera level, and use the normal lens rather than a panorama or extreme wide angle. Keep the target space visible. Photo previews cannot establish exact dimensions; enter measurements for fit checks.
+      </Notice>
       {photo ? (
         <View style={ui.card}>
           <Image
@@ -63,7 +70,8 @@ export function PhotoScreen({ room, photo, onBack, onPhotoChange, onUseSample, o
       ) : null}
 
       <View style={ui.stack}>
-        {photo ? <Button title="Continue" onPress={onContinue} disabled={busy} /> : null}
+        {onSkip ? <Button title={photo ? "Save & return to room" : "Save room · add photo later"} secondary onPress={onSkip} disabled={busy}/> : null}
+        {photo ? <Button title="Continue to visualization" onPress={onContinue} disabled={busy} /> : null}
         <Button title={photo ? 'Replace with another photo' : 'Choose from photos'} secondary={!!photo} onPress={() => choose(false)} disabled={busy} />
         <Button title="Take a photo" secondary onPress={() => choose(true)} disabled={busy} />
         {photo ? <Button title="Remove photo" secondary onPress={() => { setMessage(null); onPhotoChange(null); }} disabled={busy} /> : null}

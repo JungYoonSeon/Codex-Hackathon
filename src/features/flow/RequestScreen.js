@@ -26,9 +26,9 @@ export function RequestScreen({ room, photo, request, live, onBack, onSubmit, on
 
   return (
     <Screen>
-      <Header onBack={onBack} label="STEP 3 OF 4" />
+      <Header onBack={onBack} label="CHOOSE FURNITURE" />
       <Text style={ui.eyebrow}>WHAT ARE YOU LOOKING FOR?</Text>
-      <Text style={ui.title}>Describe the furniture</Text>
+      <Text style={ui.title}>What would you like to try?</Text>
       <Text style={[ui.hint, { marginTop: 8, marginBottom: 18 }]}>
         Room: {room ? formatRoom(room) : '—'} · {isSample ? 'sample room' : 'your photo'}
       </Text>

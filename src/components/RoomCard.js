@@ -1,14 +1,15 @@
 import React from 'react';
 import { ImageBackground, Pressable, StyleSheet, View } from 'react-native';
+import { photoImageSource } from '../features/preview/sampleScenario';
 import AppText from './AppText';
 import { COLORS } from '../theme/colors';
 
 const ROOM_IMAGE = require('../../assets/photos/room-sample.jpg');
 
-export default function RoomCard({ title, onPress }) {
+export default function RoomCard({ title, photo, onPress }) {
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={`Continue designing ${title}`} onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
-      <ImageBackground source={ROOM_IMAGE} resizeMode="cover" style={styles.photo} imageStyle={styles.rounded}>
+      <ImageBackground source={photo ? photoImageSource(photo) : ROOM_IMAGE} resizeMode="cover" style={styles.photo} imageStyle={styles.rounded}>
         <View style={styles.overlay} />
         <View style={styles.caption}><AppText style={styles.title}>{title}</AppText><AppText style={styles.action}>Continue →</AppText></View>
       </ImageBackground>

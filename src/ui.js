@@ -3,8 +3,8 @@ import React from 'react';
 import { Pressable, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 
 export const COLORS = {
-  ink: '#24332E', muted: '#5E6B65', green: '#386B55', pale: '#EAF0E8',
-  cream: '#F7F5F0', white: '#FFFFFF', line: '#E4E7E1', coral: '#C86F53',
+  ink: '#162B70', muted: '#5C667D', green: '#162B70', pale: '#F3F5FB',
+  cream: '#FFFFFF', white: '#FFFFFF', line: '#DBE3F2', coral: '#C86F53',
   warnBg: '#FBEDE6', warnInk: '#8A3F27', infoBg: '#EAF0E8',
 };
 

@@ -1,4 +1,5 @@
 import express from 'express';
+import { createStyleRouter, type StyleRanker } from './style/recommendations.ts';
 import multer from 'multer';
 import sharp from 'sharp';
 import { timingSafeEqual } from 'node:crypto';
@@ -12,7 +13,7 @@ import { validateOutput, type ImageEditor } from './provider.ts';
 
 export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 export interface AppConfig {
-  sessionToken: string; editor?: ImageEditor; allowedOrigin?: string;
+  sessionToken: string; editor?: ImageEditor; styleRanker?: StyleRanker; allowedOrigin?: string;
   timeoutMs?: number; maxConcurrent?: number; maxPreviewsPerHour?: number;
 }
 export function createApp(config: AppConfig) {
@@ -43,6 +44,7 @@ export function createApp(config: AppConfig) {
     next();
   };
   app.use('/products', authenticate, createDiscoveryRouter());
+  app.use('/style-recommendations', authenticate, createStyleRouter(config.styleRanker));
   app.post('/recommendations', authenticate, express.json({ limit: '16kb' }), (req, res) => {
     const input = parse(recommendationsSchema, req.body);
     res.json(recommend(input.room, input.request));

@@ -1,6 +1,6 @@
 # Home fit and comparison handoff
 
-Branch: `feature/home-fit-comparison`. This module deliberately does not edit the root app/navigation, retailer adapters, discovery UI, package manifests at the repository root, or existing shared discovery types. The integrator owns mounting the screen in the baseline.
+Branch: `feature/home-fit-comparison`. The baseline now connects the profile editor, placements, evaluations, and comparisons through `src/features/rooms/RoomJourney.js`. See `../rooms/README.md` for the current user flow and storage. `HomeFitWorkspace` remains an optional standalone screen; retailer adapters and discovery types are unchanged.
 
 ## Run independently
 
@@ -76,7 +76,7 @@ Profiles and comparison IDs persist locally; photos and historical product price
 
 ## Ownership and integration
 
-This branch owns only `shared/home-profile.ts`, `shared/product-evaluation.ts`, `src/features/home-profile/`, `src/features/product-evaluation/`, `src/features/comparison/`, and `src/storage/homeProfiles.js`. Retailer imports/search and root navigation remain the teammate/integrator's responsibility. Root dependency files were not changed.
+This branch owns only `shared/home-profile.ts`, `shared/product-evaluation.ts`, `src/features/home-profile/`, `src/features/product-evaluation/`, `src/features/comparison/`, and `src/storage/homeProfiles.js`. Retailer imports/search remain the teammate's responsibility. Root navigation is now integrated by RoomJourney. Root dependency files were not changed.
 
 Measurements use centimeters, top-left room origin, x rightwards/y downwards, and 0/90-degree placements. Photos are visual previews, not a source of accurate measurements. Door-swing rectangles are conservative user-entered areas. Walkway checks do not prove a connected walking route. Package checks do not solve continuous 3D movement, diagonal rotations, stairs or turns, elevator weight limits, or delivery-service guarantees. Unchecked geometry and missing evidence remain “확인 필요”.
 

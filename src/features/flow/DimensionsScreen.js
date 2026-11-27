@@ -54,14 +54,14 @@ export function DimensionsScreen({ room, onBack, onContinue }) {
 
   return (
     <Screen>
-      <Header onBack={onBack} label="STEP 1 OF 4" />
+      <Header onBack={onBack} label="ROOM MEASUREMENTS" />
       <Text style={ui.eyebrow}>YOUR SPACE</Text>
       <Text style={ui.title}>How big is the room?</Text>
       <Text style={ui.body}>Measure the floor area where the furniture should go.</Text>
       {field('width', 'Width (cm)', width, setWidth)}
       {field('length', 'Length (cm)', length, setLength)}
       {field('height', 'Ceiling height (cm, optional)', height, setHeight)}
-      <Notice>Dimensions only filter out obviously oversized furniture. Doorways, existing furniture and exact fit are not checked.</Notice>
+      <Notice>These dimensions help screen candidate sizes. Add doorways, obstacles and delivery routes in Measurements & lifestyle for detailed checks.</Notice>
       <Button title="Continue" onPress={submit} />
     </Screen>
   );
