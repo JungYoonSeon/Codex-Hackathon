@@ -1,16 +1,18 @@
 # RoomReady
 
-A React Native + Expo Go app (Expo SDK 54, JavaScript) for previewing curated furniture in a photo of your room.
+A React Native + Expo app (Expo SDK 58, JavaScript) for previewing curated furniture in a photo of your room.
 
 **Flow:** room dimensions → room photo → furniture request → candidate cards → Original / Furnished previews.
 
-## Status (branch `anna/roomready-preview-integration`)
+## Status (branch `main`)
 
 | Area | Status |
 |---|---|
 | Saved-example flow (sample room, two saved illustrations) | Implemented; unit-tested; iOS bundle builds. **Physical iPhone testing pending.** |
 | Live preview adapter (`/health`, `/recommendations`, `/preview`) | Implemented against `server/docs/api-handoff.md`; tested with controlled fake responses only. **Live end-to-end generation NOT verified** (needs provider credentials, a phone-reachable backend and a device run). |
 | Backend (`server/`) | 윤선's implementation; see [server/README.md](server/README.md) and [verification status](server/docs/verification.md). |
+
+The home, room picker, planner, splash, and placeholder tab screens live in `src/screens/`. Shared typography, logo, cards, buttons, and navigation icons live in `src/components/`; the Figma navy and white palette is in `src/theme/colors.js`. Geologica is bundled under `assets/fonts/` with its OFL license.
 
 Saved illustrations are bundled fixtures, not AI output and not proof that live generation works.
 
@@ -22,7 +24,7 @@ npx expo start            # LAN; phone and computer on the same network
 npx expo start --tunnel   # if the network isolates devices (may ask to install @expo/ngrok)
 ```
 
-Scan the QR code with the iPhone Camera app (or from Expo Go on Android). The installed Expo Go must support **SDK 54**; if it reports an incompatible SDK, note the exact message before changing versions. An iPhone Personal Hotspot is a simple fallback when campus Wi‑Fi blocks LAN connections.
+Scan the QR code with the iPhone Camera app (or from Expo Go on Android). Use an Expo Go release that supports **SDK 58**, or build a development client for this SDK. An iPhone Personal Hotspot is a simple fallback when campus Wi‑Fi blocks LAN connections.
 
 ### Saved-example mode (no backend needed)
 
