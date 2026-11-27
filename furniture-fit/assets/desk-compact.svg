@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="180" viewBox="0 0 120 60" role="img" aria-label="Compact desk, top-down demo schematic, 120 by 60 centimeters">
+<title>Compact desk: fictional demo schematic</title>
+<rect x="1" y="1" width="118" height="58" rx="3" fill="#dce8e5" stroke="#28594e" stroke-width="2"/>
+<path d="M 5 55 H 115" stroke="#28594e" stroke-width="2"/>
+<text x="60.0" y="28.0" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#173d34">Compact desk</text>
+<text x="60.0" y="38.0" text-anchor="middle" font-family="sans-serif" font-size="6" fill="#173d34">120 × 60 cm</text>
+</svg>
