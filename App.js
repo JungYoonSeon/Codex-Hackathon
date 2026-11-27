@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { Button, COLORS, Header } from './src/ui.js';
+import FurnitureDiscovery, { SavedFurniture } from './mobile/FurnitureDiscovery';
 import { usePreviewController } from './src/features/preview/usePreviewController.js';
 import { createLiveService, normalizeApiOrigin } from './src/features/preview/liveService.js';
 import { SAMPLE_FURNITURE_REQUEST, SAMPLE_PHOTO, SAMPLE_ROOM, savedExampleService } from './src/features/preview/sampleScenario.js';
@@ -39,19 +40,32 @@ export default function App() {
   const [request, setRequest] = useState(null);
   const [sampleReturn, setSampleReturn] = useState('home');
   const [token, setToken] = useState('');
+  const [apiOrigin, setApiOrigin] = useState(API_ORIGIN);
+  const healthCheckRef = useRef(0);
   const [health, setHealth] = useState({ status: 'idle' });
   const versionRef = useRef(0); // inputVersion: bumped on every input change
   const tokenRef = useRef('');
   const { state: preview, controller } = usePreviewController();
-  const liveService = useMemo(() => createLiveService({ apiOrigin: API_ORIGIN, getToken: () => tokenRef.current }), []);
+  const liveService = useMemo(() => createLiveService({ apiOrigin, getToken: () => tokenRef.current }), [apiOrigin]);
   // Earlier 2D planner prototype state.
   const [placements, setPlacements] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [savedProducts, setSavedProducts] = useState([]);
+  const [discoveryReturn, setDiscoveryReturn] = useState('home');
+  const exploreFurniture = () => { setDiscoveryReturn(screen); setScreen('discover'); };
+  const saveProduct = (product) => setSavedProducts(items => items.some(p => p.id === product.id) ? items : [...items, product]);
 
   const inputsChanged = () => { versionRef.current += 1; controller.invalidate(); };
   const changeRoom = (next) => { if (!sameRoom(room, next)) { inputsChanged(); setRoom(next); } };
   const changePhoto = (next) => { if (photo?.photoId !== next?.photoId) { inputsChanged(); setPhoto(next); } };
   const changeToken = (next) => { tokenRef.current = next; setToken(next); };
+  const changeConnection = (next) => {
+    const origin = normalizeApiOrigin(next.origin);
+    if (origin !== apiOrigin || next.token !== tokenRef.current) {
+      inputsChanged(); healthCheckRef.current += 1; setHealth({ status: 'idle' });
+    }
+    setApiOrigin(origin); changeToken(next.token);
+  };
 
   const runPreview = (inputs) => {
     // Sample photo → saved illustrated examples; user photo → live backend. Never a silent fallback.
@@ -80,14 +94,18 @@ export default function App() {
     setScreen('dimensions');
   };
   const checkHealth = async () => {
+    const checkId = ++healthCheckRef.current;
     setHealth({ status: 'checking' });
     try {
       const result = await liveService.checkHealth();
-      setHealth({ status: 'ok', ...result });
+      if (checkId === healthCheckRef.current) setHealth({ ...result, status: 'ok' });
     } catch (error) {
-      setHealth({ status: 'error', message: error.message });
+      if (checkId === healthCheckRef.current) setHealth({ status: 'error', message: error.message });
     }
   };
+
+  if (screen === 'discover') return <FurnitureDiscovery onBack={() => setScreen(discoveryReturn)} onSave={saveProduct} savedIds={savedProducts.map(p => p.id)} connection={{ origin: apiOrigin, token }} onConnectionChange={changeConnection} />;
+  if (screen === 'saved') return <SavedFurniture products={savedProducts} onBack={() => setScreen('home')} onExplore={exploreFurniture} onRemove={id => setSavedProducts(items => items.filter(p => p.id !== id))} />;
 
   if (screen === 'dimensions') return (
     <DimensionsScreen room={room} onBack={() => setScreen('home')}
@@ -102,7 +120,7 @@ export default function App() {
   );
   if (screen === 'request') return (
     <RequestScreen key={`request-${versionRef.current}`} room={room} photo={photo} request={request}
-      live={{ origin: API_ORIGIN, token, onTokenChange: changeToken, health, onCheckHealth: checkHealth }}
+      live={{ origin: apiOrigin, token, onTokenChange: changeToken, health, onCheckHealth: checkHealth }}
       onBack={() => setScreen('photo')} onSubmit={submitRequest} onRestoreSample={applySample} />
   );
   if (screen === 'results') return (
@@ -141,6 +159,8 @@ export default function App() {
           <View style={styles.artCaption}><Text style={styles.artCaptionTitle}>A room to begin with</Text><Text style={styles.artCaptionSub}>Illustrative sample room</Text></View>
         </View>
         <Button title="Start with your room   →" onPress={() => setScreen('dimensions')} />
+        <View style={{ marginTop: 12 }}><Button title="가구 검색 · 브랜드별로 둘러보기   →" secondary onPress={exploreFurniture} /></View>
+        <Pressable accessibilityRole="button" onPress={() => setScreen('saved')} style={styles.textAction}><Text style={styles.textActionText}>내 방 후보 보기 ({savedProducts.length})</Text></Pressable>
         <Pressable accessibilityRole="button" onPress={() => askForSample('home')} style={styles.textAction}><Text style={styles.textActionText}>Try the sample room (saved examples)</Text><Text style={styles.textArrow}>→</Text></Pressable>
         <Pressable accessibilityRole="button" onPress={() => setScreen('planner')} style={styles.textAction}><Text style={[styles.textActionText, { color: COLORS.muted }]}>Earlier 2D planner prototype</Text><Text style={[styles.textArrow, { color: COLORS.muted }]}>↗</Text></Pressable>
       </ScrollView>
@@ -169,9 +189,9 @@ export default function App() {
       {placements.length === 0 ? <View style={styles.emptyNotice}><Text style={styles.emptyIcon}>＋</Text><Text style={styles.emptyText}>Add a piece below to start arranging your room.</Text></View> : <View style={styles.placedList}><Text style={styles.sectionTitle}>In your plan</Text>{placements.map((item, i) => <Pressable key={item.instanceId} accessibilityRole="button" accessibilityLabel={`Select ${item.name}, item ${i + 1}`} onPress={() => setSelected(item.instanceId)} style={[styles.listItem, selected === item.instanceId && styles.listItemSelected]}><Text style={styles.listEmoji}>{item.emoji}</Text><View style={{ flex: 1 }}><Text style={styles.listName}>{item.name}</Text><Text style={styles.listSize}>{item.size} · demo dimensions</Text></View><Text style={selected === item.instanceId ? styles.selectedLabel : styles.selectLabel}>{selected === item.instanceId ? 'SELECTED' : 'Select'}</Text></Pressable>)}</View>}
       {selectedItem ? <View style={styles.controls}><Text style={styles.sectionTitle}>Move {selectedItem.name}</Text><View style={styles.moveRow}><Button title="← Left" small secondary onPress={() => move(-8, 0)} /><Button title="↑ Up" small secondary onPress={() => move(0, -8)} /><Button title="↓ Down" small secondary onPress={() => move(0, 8)} /><Button title="Right →" small secondary onPress={() => move(8, 0)} /></View><Button title="Remove from plan" small secondary onPress={removeSelected} /></View> : null}
       <View style={styles.catalogHeader}><View><Text style={styles.eyebrow}>THE STARTER SET</Text><Text style={styles.sectionTitle}>Choose furniture</Text></View><Text style={styles.catalogCount}>3 DEMO PIECES</Text></View>
-      <View style={styles.connectCard}><View style={styles.connectIcon}><Text style={styles.connectIconText}>⌘</Text></View><View style={{ flex: 1 }}><Text style={styles.connectTitle}>Connect your furniture catalog</Text><Text style={styles.connectSub}>Catalog connection is a placeholder. Start with the demo pieces below.</Text></View><Text style={styles.comingSoon}>SOON</Text></View>
+      <Pressable onPress={exploreFurniture} style={styles.connectCard}><View style={styles.connectIcon}><Text style={styles.connectIconText}>⌕</Text></View><View style={{ flex: 1 }}><Text style={styles.connectTitle}>상품명·브랜드로 가구 찾기</Text><Text style={styles.connectSub}>IKEA · Amazon · eBay 검색과 종류별 탐색</Text></View><Text style={styles.comingSoon}>OPEN →</Text></Pressable>
       {PRODUCTS.map((product) => <View key={product.id} style={styles.productRow}><View style={[styles.productThumb, { backgroundColor: product.color }]}><Text style={styles.productEmoji}>{product.emoji}</Text></View><View style={{ flex: 1 }}><Text style={styles.productName}>{product.name}</Text><Text style={styles.productMeta}>{product.size} · illustrative</Text></View><Pressable accessibilityRole="button" accessibilityLabel={`Add ${product.name}`} onPress={() => addProduct(product)} style={styles.addButton}><Text style={styles.addButtonText}>＋ Add</Text></Pressable></View>)}
-      <View style={styles.bottomNote}><Text style={styles.bottomNoteText}>Demo dimensions are illustrative. The sample plan checks drawn furniture overlaps only.</Text></View>
+      <View style={styles.bottomNote}><Text style={styles.bottomNoteText}>Demo dimensions are illustrative. The sample plan does not check physical fit or furniture overlaps.</Text></View>
     </ScrollView></SafeAreaView>
   );
 }

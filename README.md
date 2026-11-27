@@ -80,3 +80,9 @@ The catalog contains four clearly fictional furniture items. Matching filters ou
 ## Earlier prototypes
 
 The 2D planner is still reachable from the home screen as “Earlier 2D planner prototype”. `furniture-fit/` (measured-space/overlap module and its tests) is retained for reference but is **outside the current sprint**; its collision/exact-fit UI is not connected to this flow.
+
+## Product discovery
+
+The home screen now includes **가구 검색 · 브랜드별로 둘러보기** and **내 방 후보 보기**. Search by product name and brand, browse 12 categories, filter retailers, inspect product details and save candidates during the session. Sixteen clearly labeled demo products are available immediately. IKEA/Amazon/eBay search links open the retailer; Amazon/eBay in-app search needs separate retailer API credentials, and IKEA in-app data uses an authorized feed. Configure connections in the discovery screen and `server/.env`; see the product-discovery section in the backend README. External products are not yet connected to photo generation.
+
+The preview flow and product discovery share one in-memory backend origin and demo-session token. Updating discovery connection settings also updates live previews and invalidates previous preview results. Search and the shortlist support many categories; photo generation still uses only the four supported sample chairs/sofas. Saving a retailer product does not pass it to the preview endpoint.
