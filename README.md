@@ -1,46 +1,82 @@
 # RoomReady
 
-A React Native + Expo Go starter for exploring furniture layouts on a phone.
+A React Native + Expo Go app (Expo SDK 54, JavaScript) for previewing curated furniture in a photo of your room.
 
-## Run on a phone
+**Flow:** room dimensions → room photo → furniture request → candidate cards → Original / Furnished previews.
 
-1. Install Node.js (LTS) and Expo Go on your iPhone or Android phone.
-2. From this folder, run `npm install`.
-3. Run `npx expo start` and scan the QR code with Expo Go. Your phone and computer should be on the same network. If the network blocks device discovery, run `npx expo start --tunnel`.
+## Status (branch `anna/roomready-preview-integration`)
 
-The room photo picker uses Expo Image Picker. Photos are held in app state as a local device URI and are not uploaded or persisted by this prototype.
+| Area | Status |
+|---|---|
+| Saved-example flow (sample room, two saved illustrations) | Implemented; unit-tested; iOS bundle builds. **Physical iPhone testing pending.** |
+| Live preview adapter (`/health`, `/recommendations`, `/preview`) | Implemented against `server/docs/api-handoff.md`; tested with controlled fake responses only. **Live end-to-end generation NOT verified** (needs provider credentials, a phone-reachable backend and a device run). |
+| Backend (`server/`) | 윤선's implementation; see [server/README.md](server/README.md) and [verification status](server/docs/verification.md). |
 
-## Current starter flow
+Saved illustrations are bundled fixtures, not AI output and not proof that live generation works.
 
-- Home screen with a one-tap sample-room path.
-- Room choice screen with sample room, camera, and photo-library entry points.
-- Planner with an illustrative 2D room, demo furniture catalog, add/select/move/remove/reset controls, and an explicit catalog-connection placeholder.
-- Furniture products and dimensions are illustrative demo data.
-
-The starter UI and the image-edit backend below are not yet wired together; merging them does not complete native end-to-end integration.
-
-## Current sprint: photo → curated candidates → edited-room alternatives
-
-- **Josephine:** native app flow, measurements, request form and integration (current starter: root `App.js`; integration pending).
-- **Anna:** photo preparation, result cards, comparison and generation controller (current starter: root `App.js`; integration pending).
-- **윤선:** implemented matching/image backend (`server/`) and mobile-safe contracts (`shared/`).
-
-Start with [the backend README](server/README.md), [API handoff](server/docs/api-handoff.md), and [verification status](server/docs/verification.md).
+## Run the app on a phone
 
 ```sh
-cd server
 npm ci
-# Add OPENAI_API_KEY and IMAGE_MODEL to the ignored .env.
-# Fresh checkout: copy .env.example and set a random DEMO_SESSION_TOKEN too.
-npm test
-npm run typecheck
-npm start
+npx expo start            # LAN; phone and computer on the same network
+npx expo start --tunnel   # if the network isolates devices (may ask to install @expo/ngrok)
 ```
 
-Run `npm run smoke` after configuring credentials for one paid image-edit feasibility check; `npm run smoke -- --two` checks two sequential options and records timings. This has not been run live yet. Native phone integration and reviewed live sample outputs are separate acceptance gates.
+Scan the QR code with the iPhone Camera app (or from Expo Go on Android). The installed Expo Go must support **SDK 54**; if it reports an incompatible SDK, note the exact message before changing versions. An iPhone Personal Hotspot is a simple fallback when campus Wi‑Fi blocks LAN connections.
 
-The catalog contains four clearly fictional furniture items. Matching filters obviously oversized items; it does not certify exact fit. Included saved images are labeled illustrated examples, not generated photographs.
+### Saved-example mode (no backend needed)
 
-## Earlier prototype
+Home → **Try the sample room (saved examples)** → confirm the preset inputs (400 × 300 cm, 260 cm ceiling, sofa, “compact beige”) → **Show furniture options**. Two candidates appear with saved illustrations, labelled “Saved illustrated example — not a live AI result”. Saved examples are shown only for the sample photo with exactly those inputs; any edit makes them unavailable (with a “Restore sample inputs” button). They are never used for your own photo.
 
-`furniture-fit/` contains the earlier measured-space/overlap module and its 18 tests. It is retained for reference but is **outside the revised sprint scope**; do not connect its collision or exact-fit UI to this P0 flow.
+### Live mode (your own photo)
+
+1. Start the backend (`server/README.md`): `cd server && npm ci && npm start`, with `OPENAI_API_KEY`, `IMAGE_MODEL` and `DEMO_SESSION_TOKEN` in the ignored `server/.env`.
+2. Expose it at an origin the phone can reach (team HTTPS deployment or secure tunnel). The Expo tunnel does **not** expose the backend, and `localhost` on the phone means the phone itself.
+3. Copy `.env.example` to `.env` at the repo root and set `EXPO_PUBLIC_API_URL` to that origin. Restart `npx expo start` (values are inlined at bundle time).
+4. In the app, on the request step, enter the restricted **demo-session token** (kept in memory only) and tap **Check server**.
+
+Never put `OPENAI_API_KEY` or the demo token in any `EXPO_PUBLIC_*` value or in Git.
+
+Live previews send the selected photo (re-encoded as a JPEG, longest edge ≤ 1280 px, ≤ 5 MB) to the RoomReady server and OpenAI. Options are generated one at a time. There are no automatic retries; **Retry** on a failed option starts a new paid attempt.
+
+## Checks
+
+```sh
+npm test               # mobile controller/adapters: stale responses, sequencing, partial failure, retry, fixture restrictions, live contract
+npm run typecheck      # mobile + shared/ (server/ excluded; it has its own)
+npx expo install --check && npx expo-doctor
+cd server && npm test && npm run typecheck
+```
+
+## Code map
+
+- `App.js`: root navigation and shared inputs (`room`, `photo`, `request`, `inputVersion`), plus the earlier 2D planner prototype.
+- `src/features/flow/`: `DimensionsScreen`, `PhotoScreen`, `SampleConfirmScreen`, `RequestScreen`, `ResultsScreen`.
+- `src/features/preview/previewController.js`: the single owner of result state (snapshot, sequential generation, stale/mismatch rejection, explicit retry, invalidation).
+- `src/features/preview/savedExampleService.js` + `sampleScenario.js`: wrap `shared/fixture-service.ts` with the bundled `assets/sample/*` images.
+- `src/features/preview/liveService.js`: the backend adapter. `photo.js`: picker and JPEG preparation (`expo-image-manipulator`).
+- `src/features/preview/sampleRecommendations.json`: copy of `server/docs/sample-recommendations.json` (a test fails if they drift).
+
+## iPhone checklist (to run on the device)
+
+- [ ] App opens in Expo Go; home screen shows “Make space for what matters.”
+- [ ] Sample flow: confirm inputs → two cards (Demo Compact Linen Sofa, Demo Sage Sofa) → both saved illustrations shown, labelled as saved examples.
+- [ ] Original / Furnished switch works on each card; images are not cropped.
+- [ ] Edit request → change description → results do not reuse the saved images; “Restore sample inputs” brings them back.
+- [ ] Own photo: choose, cancel (photo kept), replace, remove (Continue hidden), take photo; portrait and landscape photos preview upright.
+- [ ] Own photo without a backend: “Live preview unavailable” with an explicit sample option, and no fake output.
+- [ ] Start again returns to dimensions with empty inputs; no crash.
+- [ ] Large text (Settings → Display → Text Size) and VoiceOver labels on the comparison buttons.
+- [ ] (When the backend is reachable) `https://<origin>/health` opens in Safari on the phone, then a live run with A/B results and a deliberate retry.
+
+## Team
+
+- **Josephine:** native app flow, measurements, request form, final integration. This branch adds a minimal dimensions/request flow; reconcile it with any of her work.
+- **Anna:** photo preparation, result cards and comparison, generation controller (this branch).
+- **윤선:** matching/image backend (`server/`) and mobile-safe contracts (`shared/`).
+
+The catalog contains four clearly fictional furniture items. Matching filters out obviously oversized items; it does not certify exact fit.
+
+## Earlier prototypes
+
+The 2D planner is still reachable from the home screen as “Earlier 2D planner prototype”. `furniture-fit/` (measured-space/overlap module and its tests) is retained for reference but is **outside the current sprint**; its collision/exact-fit UI is not connected to this flow.

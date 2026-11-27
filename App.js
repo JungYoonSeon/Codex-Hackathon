@@ -1,7 +1,5 @@
-import React, { useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
-  Alert,
-  Image,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -10,61 +8,112 @@ import {
   Text,
   View,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+import { Button, COLORS, Header } from './src/ui.js';
+import { usePreviewController } from './src/features/preview/usePreviewController.js';
+import { createLiveService, normalizeApiOrigin } from './src/features/preview/liveService.js';
+import { SAMPLE_FURNITURE_REQUEST, SAMPLE_PHOTO, SAMPLE_ROOM, savedExampleService } from './src/features/preview/sampleScenario.js';
+import { DimensionsScreen } from './src/features/flow/DimensionsScreen.js';
+import { PhotoScreen } from './src/features/flow/PhotoScreen.js';
+import { SampleConfirmScreen } from './src/features/flow/SampleConfirmScreen.js';
+import { RequestScreen } from './src/features/flow/RequestScreen.js';
+import { ResultsScreen } from './src/features/flow/ResultsScreen.js';
 
-const COLORS = {
-  ink: '#24332E', muted: '#68756F', green: '#386B55', pale: '#EAF0E8',
-  cream: '#F7F5F0', white: '#FFFFFF', line: '#E4E7E1', coral: '#C86F53',
-};
+// Backend origin for live previews (inlined by Expo at bundle time). Never put provider keys here.
+const API_ORIGIN = normalizeApiOrigin(process.env.EXPO_PUBLIC_API_URL);
 
+const sameRoom = (a, b) => !!a && !!b && a.widthCm === b.widthCm && a.lengthCm === b.lengthCm && a.heightCm === b.heightCm;
+const sameRequest = (a, b) => !!a && !!b && a.category === b.category && a.description === b.description;
+
+// Products for the earlier 2D planner prototype (outside the current preview flow).
 const PRODUCTS = [
   { id: 'chair', name: 'Everyday chair', size: '50 × 50 cm', emoji: '🪑', color: '#E8D1B5', w: 18, h: 18 },
   { id: 'table', name: 'Small table', size: '120 × 80 cm', emoji: '🟤', color: '#D7B78F', w: 26, h: 21 },
   { id: 'shelf', name: 'Low shelf', size: '80 × 40 cm', emoji: '📚', color: '#C9D7CB', w: 23, h: 15 },
 ];
 
-function Button({ title, onPress, secondary = false, small = false }) {
-  return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.button, secondary && styles.buttonSecondary, small && styles.buttonSmall, pressed && styles.pressed]}>
-      <Text style={[styles.buttonText, secondary && styles.buttonTextSecondary, small && styles.buttonTextSmall]}>{title}</Text>
-    </Pressable>
-  );
-}
-
-function Header({ onBack }) {
-  return (
-    <View style={styles.header}>
-      {onBack ? <Pressable accessibilityRole="button" accessibilityLabel="Go back" onPress={onBack} style={styles.back}><Text style={styles.backText}>‹</Text></Pressable> : <View style={styles.brandMark}><Text style={styles.brandMarkText}>R</Text></View>}
-      <Text style={styles.brand}>roomready</Text>
-      <View style={styles.headerSpacer} />
-      <Text style={styles.stepPill}>ROOM PLANNER</Text>
-    </View>
-  );
-}
-
 export default function App() {
   const [screen, setScreen] = useState('home');
-  const [room, setRoom] = useState('sample');
+  // Shared inputs for the preview flow: dimensions → photo → request → results.
+  const [room, setRoom] = useState(null);
   const [photo, setPhoto] = useState(null);
+  const [request, setRequest] = useState(null);
+  const [sampleReturn, setSampleReturn] = useState('home');
+  const [token, setToken] = useState('');
+  const [health, setHealth] = useState({ status: 'idle' });
+  const versionRef = useRef(0); // inputVersion: bumped on every input change
+  const tokenRef = useRef('');
+  const { state: preview, controller } = usePreviewController();
+  const liveService = useMemo(() => createLiveService({ apiOrigin: API_ORIGIN, getToken: () => tokenRef.current }), []);
+  // Earlier 2D planner prototype state.
   const [placements, setPlacements] = useState([]);
   const [selected, setSelected] = useState(null);
 
-  const choosePhoto = async (camera) => {
-    const permission = camera
-      ? await ImagePicker.requestCameraPermissionsAsync()
-      : await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert('Permission needed', `Allow ${camera ? 'camera' : 'photo library'} access to choose a room photo. You can keep using the sample room without it.`);
-      return;
-    }
-    const result = camera
-      ? await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.8 })
-      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
-    if (!result.canceled && result.assets?.[0]?.uri) {
-      setPhoto(result.assets[0].uri);
-      setRoom('photo');
+  const inputsChanged = () => { versionRef.current += 1; controller.invalidate(); };
+  const changeRoom = (next) => { if (!sameRoom(room, next)) { inputsChanged(); setRoom(next); } };
+  const changePhoto = (next) => { if (photo?.photoId !== next?.photoId) { inputsChanged(); setPhoto(next); } };
+  const changeToken = (next) => { tokenRef.current = next; setToken(next); };
+
+  const runPreview = (inputs) => {
+    // Sample photo → saved illustrated examples; user photo → live backend. Never a silent fallback.
+    const service = inputs.photo?.source === 'sample' ? savedExampleService : liveService;
+    controller.start({ ...inputs, inputVersion: versionRef.current }, { service, mode: service.mode });
+  };
+  const submitRequest = (next) => {
+    if (!sameRequest(request, next)) { inputsChanged(); setRequest(next); }
+    if (!room) { setScreen('dimensions'); return; }
+    if (!photo) { setScreen('photo'); return; }
+    setScreen('results');
+    runPreview({ room, photo, request: next });
+  };
+  const askForSample = (returnTo) => { setSampleReturn(returnTo); setScreen('sampleConfirm'); };
+  const applySample = () => {
+    inputsChanged();
+    setRoom({ ...SAMPLE_ROOM });
+    setPhoto(SAMPLE_PHOTO);
+    setRequest({ ...SAMPLE_FURNITURE_REQUEST });
+    setScreen('request');
+  };
+  const leaveResults = (to) => { controller.invalidate(); setScreen(to); };
+  const startAgain = () => {
+    inputsChanged();
+    setRoom(null); setPhoto(null); setRequest(null);
+    setScreen('dimensions');
+  };
+  const checkHealth = async () => {
+    setHealth({ status: 'checking' });
+    try {
+      const result = await liveService.checkHealth();
+      setHealth({ status: 'ok', ...result });
+    } catch (error) {
+      setHealth({ status: 'error', message: error.message });
     }
   };
+
+  if (screen === 'dimensions') return (
+    <DimensionsScreen room={room} onBack={() => setScreen('home')}
+      onContinue={(next) => { changeRoom(next); setScreen('photo'); }} />
+  );
+  if (screen === 'photo') return (
+    <PhotoScreen room={room} photo={photo} onBack={() => setScreen('dimensions')} onPhotoChange={changePhoto}
+      onUseSample={() => askForSample('photo')} onContinue={() => setScreen('request')} />
+  );
+  if (screen === 'sampleConfirm') return (
+    <SampleConfirmScreen hasExistingInputs={!!(room || photo || request)} onCancel={() => setScreen(sampleReturn)} onConfirm={applySample} />
+  );
+  if (screen === 'request') return (
+    <RequestScreen key={`request-${versionRef.current}`} room={room} photo={photo} request={request}
+      live={{ origin: API_ORIGIN, token, onTokenChange: changeToken, health, onCheckHealth: checkHealth }}
+      onBack={() => setScreen('photo')} onSubmit={submitRequest} onRestoreSample={applySample} />
+  );
+  if (screen === 'results') return (
+    <ResultsScreen state={preview}
+      onRetry={(optionId) => controller.retry(optionId)}
+      onRunAgain={() => runPreview({ room, photo, request })}
+      onEditRequest={() => leaveResults('request')}
+      onStartAgain={() => { controller.invalidate(); startAgain(); }}
+      onUseSample={() => { controller.invalidate(); askForSample('request'); }}
+      onRestoreSample={() => { controller.invalidate(); applySample(); }} />
+  );
 
   const addProduct = (product) => {
     const item = { ...product, instanceId: `${product.id}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, x: 18 + (placements.length % 3) * 24, y: 20 + (placements.length % 2) * 28 };
@@ -76,8 +125,6 @@ export default function App() {
     setPlacements((items) => items.filter((item) => item.instanceId !== selected));
     setSelected(null);
   };
-  const startSample = () => { setRoom('sample'); setPhoto(null); setScreen('planner'); };
-
   if (screen === 'home') return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" />
@@ -85,7 +132,7 @@ export default function App() {
         <Header />
         <View style={styles.heroTag}><View style={styles.tagDot} /><Text style={styles.tagText}>A LITTLE MORE ROOM TO IMAGINE</Text></View>
         <Text style={styles.heroTitle}>Make space for{ '\n' }what matters.</Text>
-        <Text style={styles.heroBody}>Try furniture arrangements before you buy. Start with a sample room—no account or personal photo needed.</Text>
+        <Text style={styles.heroBody}>See furniture options in your room before you buy. Or start with a sample room—no account or personal photo needed.</Text>
         <View style={styles.heroArt}>
           <View style={styles.sun} />
           <View style={styles.window}><View style={styles.windowPane} /><View style={styles.windowPane} /></View>
@@ -93,26 +140,11 @@ export default function App() {
           <View style={styles.rug}><View style={styles.sofa}><View style={styles.sofaCushion} /><View style={styles.sofaCushion} /></View><View style={styles.lamp}><Text style={{ fontSize: 28 }}>◉</Text></View></View>
           <View style={styles.artCaption}><Text style={styles.artCaptionTitle}>A room to begin with</Text><Text style={styles.artCaptionSub}>Illustrative sample room</Text></View>
         </View>
-        <Button title="Try a sample room   →" onPress={startSample} />
-        <Pressable onPress={() => setScreen('choose')} style={styles.textAction}><Text style={styles.textActionText}>Choose a room or take a photo</Text><Text style={styles.textArrow}>↗</Text></Pressable>
+        <Button title="Start with your room   →" onPress={() => setScreen('dimensions')} />
+        <Pressable accessibilityRole="button" onPress={() => askForSample('home')} style={styles.textAction}><Text style={styles.textActionText}>Try the sample room (saved examples)</Text><Text style={styles.textArrow}>→</Text></Pressable>
+        <Pressable accessibilityRole="button" onPress={() => setScreen('planner')} style={styles.textAction}><Text style={[styles.textActionText, { color: COLORS.muted }]}>Earlier 2D planner prototype</Text><Text style={[styles.textArrow, { color: COLORS.muted }]}>↗</Text></Pressable>
       </ScrollView>
     </SafeAreaView>
-  );
-
-  if (screen === 'choose') return (
-    <SafeAreaView style={styles.safe}><StatusBar barStyle="dark-content" /><ScrollView contentContainerStyle={styles.pageContent}>
-      <Header onBack={() => setScreen('home')} />
-      <Text style={styles.eyebrow}>STEP 01 · YOUR SPACE</Text><Text style={styles.pageTitle}>Where should we{ '\n' }start?</Text>
-      <Text style={styles.body}>A photo is just a visual reference. It won’t be measured or uploaded.</Text>
-      <Pressable onPress={startSample} style={({ pressed }) => [styles.roomOption, pressed && styles.pressed]}>
-        <View style={styles.sampleThumb}><View style={styles.thumbRug}><View style={styles.thumbSofa} /></View></View>
-        <View style={styles.roomOptionCopy}><Text style={styles.roomOptionTitle}>Try the sample room</Text><Text style={styles.roomOptionSub}>Ready to explore · no photo needed</Text></View><Text style={styles.roomOptionArrow}>→</Text>
-      </Pressable>
-      <View style={styles.orRow}><View style={styles.rule} /><Text style={styles.orText}>OR ADD YOUR OWN</Text><View style={styles.rule} /></View>
-      <Pressable onPress={() => choosePhoto(true)} style={styles.photoChoice}><Text style={styles.choiceIcon}>⌕</Text><View style={styles.roomOptionCopy}><Text style={styles.roomOptionTitle}>Take a room photo</Text><Text style={styles.roomOptionSub}>Camera access is only used when you choose this</Text></View><Text style={styles.roomOptionArrow}>＋</Text></Pressable>
-      <Pressable onPress={() => choosePhoto(false)} style={styles.photoChoice}><Text style={styles.choiceIcon}>▧</Text><View style={styles.roomOptionCopy}><Text style={styles.roomOptionTitle}>Choose from photos</Text><Text style={styles.roomOptionSub}>Stays on your device; remove it any time</Text></View><Text style={styles.roomOptionArrow}>＋</Text></Pressable>
-      <Text style={styles.privacyNote}>Your photo stays on this device. RoomReady doesn’t upload or save it.</Text>
-    </ScrollView></SafeAreaView>
   );
 
   const selectedItem = placements.find((item) => item.instanceId === selected);
@@ -122,9 +154,8 @@ export default function App() {
       <Header onBack={() => setScreen('home')} />
       <View style={styles.plannerTitleRow}><View><Text style={styles.eyebrow}>YOUR ROOM · SAMPLE</Text><Text style={styles.pageTitleSmall}>Room planner</Text></View><Pressable onPress={() => { setPlacements([]); setSelected(null); }} style={styles.reset}><Text style={styles.resetText}>Reset</Text></Pressable></View>
       <View style={styles.photoCard}>
-        {photo ? <Image source={{ uri: photo }} style={styles.photoImage} /> : <View style={styles.samplePhoto}><View style={styles.samplePhotoWindow} /><View style={styles.samplePhotoRug}><View style={styles.samplePhotoSofa} /></View><Text style={styles.samplePhotoLabel}>SUNLIT LIVING ROOM</Text></View>}
-        <View style={styles.photoCardText}><Text style={styles.photoTitle}>{photo ? 'Your room photo' : 'A room to plan in'}</Text><Text style={styles.photoSub}>{photo ? 'Photo reference only · not measured' : 'Sample room · no photo needed'}</Text></View>
-        {photo ? <Pressable accessibilityLabel="Remove room photo" onPress={() => { setPhoto(null); setRoom('sample'); }}><Text style={styles.removePhoto}>Remove</Text></Pressable> : null}
+        <View style={styles.samplePhoto}><View style={styles.samplePhotoWindow} /><View style={styles.samplePhotoRug}><View style={styles.samplePhotoSofa} /></View><Text style={styles.samplePhotoLabel}>SUNLIT LIVING ROOM</Text></View>
+        <View style={styles.photoCardText}><Text style={styles.photoTitle}>A room to plan in</Text><Text style={styles.photoSub}>Earlier prototype · sample room only</Text></View>
       </View>
       <View style={styles.planHeading}><Text style={styles.sectionTitle}>2D floor plan</Text><Text style={styles.scaleNote}>Illustrative · not to scale</Text></View>
       <View style={styles.planWrap}>
