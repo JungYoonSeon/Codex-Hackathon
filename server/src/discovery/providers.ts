@@ -2,6 +2,7 @@ import type { DiscoveryProduct, ProductCategory, ProductSearch } from '../../../
 import { productCategories } from '../../../shared/discovery.ts';
 import { readFile } from 'node:fs/promises';
 import { z } from 'zod';
+import { ConnectorError, errorFromHttpStatus } from './errors.ts';
 
 // Runtime retailer data is untrusted. URLs are limited to the source's public pages/CDNs.
 function url(value: unknown, hosts: string[]): string | undefined {
@@ -21,12 +22,12 @@ export function searchTerms(input: ProductSearch): string {
 }
 async function json(url: string, init: RequestInit, signal: AbortSignal): Promise<any> {
   const res=await fetch(url,{...init,signal});
-  if(!res.ok) throw new Error(`Retailer HTTP ${res.status}`);
+  if(!res.ok) throw errorFromHttpStatus(res.status);
   const length=Number(res.headers.get('content-length')??0);
-  if(length>3_000_000) throw new Error('Retailer response too large');
-  const reader=res.body?.getReader();if(!reader)throw new Error('Empty retailer response');
+  if(length>3_000_000) throw new ConnectorError('parse','Retailer response too large');
+  const reader=res.body?.getReader();if(!reader)throw new ConnectorError('parse','Empty retailer response');
   let size=0;const chunks:Uint8Array[]=[];
-  while(true){const {value,done}=await reader.read();if(done)break;size+=value.length;if(size>3_000_000){await reader.cancel();throw new Error('Retailer response too large');}chunks.push(value);}
+  while(true){const {value,done}=await reader.read();if(done)break;size+=value.length;if(size>3_000_000){await reader.cancel();throw new ConnectorError('parse','Retailer response too large');}chunks.push(value);}
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
 let amazonToken={value:'',expires:0};let ebayToken={value:'',expires:0};
@@ -38,11 +39,11 @@ export async function searchAmazon(input: ProductSearch, signal: AbortSignal): P
     const host=({'3.1':'api.amazon.com','3.2':'api.amazon.co.uk','3.3':'api.amazon.co.jp'} as Record<string,string>)[region];
     if(!host)throw new Error('Invalid credential version');
     const token=await json(`https://${host}/auth/o2/token`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({grant_type:'client_credentials',client_id:process.env.AMAZON_CLIENT_ID,client_secret:process.env.AMAZON_CLIENT_SECRET,scope:'creatorsapi::default'})},signal);
-    if(!token.access_token)throw new Error('No Amazon token');
+    if(!token.access_token)throw new ConnectorError('access-denied','No Amazon token');
     amazonToken={value:token.access_token,expires:Date.now()+(Number(token.expires_in)||3600)*1000-60000};
   }
   const result=await json('https://creatorsapi.amazon/catalog/v1/searchItems',{method:'POST',headers:{Authorization:`Bearer ${amazonToken.value}`,'Content-Type':'application/json','x-marketplace':marketplace},body:JSON.stringify({marketplace,partnerTag:process.env.AMAZON_PARTNER_TAG,keywords:searchTerms(input),...(input.brand?{brand:input.brand}:{}),itemCount:10,itemPage:input.page,resources:['images.primary.medium','itemInfo.title','itemInfo.byLineInfo','itemInfo.features','offersV2.listings.price']})},signal);
-  if(result.errors?.length && !result.searchResult?.items)throw new Error('Amazon search rejected');
+  if(result.errors?.length && !result.searchResult?.items)throw new ConnectorError('access-denied','Amazon search rejected');
   const products:DiscoveryProduct[]=(result.searchResult?.items??[]).flatMap((item:any)=>{
     const name=text(item.itemInfo?.title?.displayValue);const productUrl=url(item.detailPageURL,['amazon.com','amazon.co.uk','amazon.co.jp']);
     if(!name||!productUrl||!item.asin)return [];
@@ -59,7 +60,7 @@ export async function searchAmazon(input: ProductSearch, signal: AbortSignal): P
 export async function searchEbay(input: ProductSearch, signal: AbortSignal): Promise<{products:DiscoveryProduct[];hasMore:boolean}> {
   if(!ebayToken.value || ebayToken.expires<Date.now()){
     const token=await json('https://api.ebay.com/identity/v1/oauth2/token',{method:'POST',headers:{Authorization:`Basic ${Buffer.from(`${process.env.EBAY_CLIENT_ID}:${process.env.EBAY_CLIENT_SECRET}`).toString('base64')}`,'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'client_credentials',scope:'https://api.ebay.com/oauth/api_scope'})},signal);
-    if(!token.access_token)throw new Error('No eBay token');
+    if(!token.access_token)throw new ConnectorError('access-denied','No eBay token');
     ebayToken={value:token.access_token,expires:Date.now()+(Number(token.expires_in)||7200)*1000-60000};
   }
   const params=new URLSearchParams({q:searchTerms(input),limit:'20',offset:String((input.page-1)*20)});

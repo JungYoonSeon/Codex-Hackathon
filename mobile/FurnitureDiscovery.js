@@ -1,14 +1,29 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Linking, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { discoveryDemoProducts, filterProducts, productCategories, retailerLinks } from '../shared/discovery';
+import { conflictNotes, dataBadge, formatDimensions, formatPackages, formatPrice, missingSummary, provenanceNote } from './product-search/productDisplay.js';
 
-const sources = [{id:'all',label:'전체 판매처'},{id:'demo',label:'샘플'},{id:'ikea',label:'IKEA'},{id:'amazon',label:'Amazon'},{id:'ebay',label:'eBay'}];
+const sources = [{id:'all',label:'전체 판매처'},{id:'demo',label:'샘플'},{id:'ikea',label:'IKEA'},{id:'coupang',label:'쿠팡'},{id:'amazon',label:'Amazon'},{id:'ebay',label:'eBay'}];
 const sorts=[{id:'relevance',label:'관련도순'},{id:'price-asc',label:'낮은 가격순'},{id:'price-desc',label:'높은 가격순'}];
 const colors={ink:'#24332E',green:'#386B55',muted:'#68756F',cream:'#F7F5F0',line:'#E4E7E1'};
 const categoryOf=(p)=>productCategories.find(c=>c.id===p.category)||productCategories[0];
-const dimensions=(p)=>p.dimensions ? [p.dimensions.widthCm,p.dimensions.depthCm,p.dimensions.heightCm].map(v=>v??'?').join(' × ')+' cm' : '치수 미제공 · 판매처에서 확인';
-const price=(p)=>p.price ? `${p.price.currency} ${p.price.amount.toLocaleString()}` : p.dataMode==='demo'?'가격 없는 샘플 상품':'가격은 판매처에서 확인';
-const badge=(p)=>p.dataMode==='demo'?'샘플':p.dataMode==='feed'?'등록 카탈로그':'실시간 검색';
+const dimensions=formatDimensions;
+const price=formatPrice;
+const badge=dataBadge;
+// Retailer detail sections (verified snapshots and connectors that supply them). Absent data is listed, not hidden.
+function RetailerDetails({product}){
+  const packages=formatPackages(product);const missing=missingSummary(product);const conflicts=conflictNotes(product);const provenance=provenanceNote(product);
+  const has=packages.length||product.groundClearanceCm!==undefined||product.materials?.length||missing.length||conflicts.length||provenance;
+  if(!has)return null;
+  return <View>
+    {packages.length>0&&<><Text style={styles.section}>포장 (배송 기준)</Text>{packages.map(l=><Text key={l} style={styles.subtitle}>{l}</Text>)}<Text style={styles.caption}>조립된 제품 크기와 다른 배송 상자 크기예요.</Text></>}
+    {product.groundClearanceCm!==undefined&&<><Text style={styles.section}>바닥 여유 공간</Text><Text style={styles.subtitle}>{product.groundClearanceCm} cm</Text></>}
+    {product.materials?.length>0&&<><Text style={styles.section}>소재</Text>{product.materials.map((m,i)=><Text key={i} style={styles.caption}>{m.part?`${m.part}: `:''}{m.material}</Text>)}</>}
+    {conflicts.length>0&&<><Text style={styles.section}>판매처 정보 불일치</Text>{conflicts.map(c=><Text key={c} style={styles.sourceNote}>{c}</Text>)}</>}
+    {missing.length>0&&<><Text style={styles.section}>확인이 필요한 정보</Text>{missing.map(m=><Text key={m} style={styles.caption}>• {m}</Text>)}</>}
+    {provenance&&<Text style={styles.sourceNote}>{provenance}</Text>}
+  </View>;
+}
 async function openUrl(url){try{await Linking.openURL(url);}catch{Alert.alert('링크를 열지 못했어요','잠시 후 다시 시도해 주세요.');}}
 function Chip({label,selected,onPress}){return <Pressable accessibilityRole="button" accessibilityState={{selected}} onPress={onPress} style={[styles.chip,selected&&styles.chipActive]}><Text style={[styles.chipText,selected&&styles.chipTextActive]}>{label}</Text></Pressable>;}
 function ProductImage({product,large=false}){
@@ -73,7 +88,7 @@ export default function FurnitureDiscovery({onBack,onSave,savedIds=[],connection
     </>}
     <Text style={styles.section}>판매처에서 더 찾아보기</Text><Text style={styles.caption}>현재 검색어와 종류를 판매처 사이트로 전달합니다. 앱 내 상품 검색과는 별도입니다.</Text>{(result.links.length?result.links:retailerLinks({q,brand,category})).filter(l=>source==='all'||source==='demo'||source===l.source).map(l=><Pressable key={l.source} onPress={()=>openUrl(l.url)} style={styles.retailer}><Text style={styles.link}>{l.label} ↗</Text></Pressable>)}
   </ScrollView>
-  <Modal visible={!!detail} animationType="slide" onRequestClose={()=>setDetail(null)}><SafeAreaView style={styles.safe}>{detail&&<ScrollView contentContainerStyle={styles.content}><Pressable onPress={()=>setDetail(null)} accessibilityRole="button"><Text style={styles.link}>← 검색 결과로</Text></Pressable><ProductImage product={detail} large/><Text style={styles.badge}>{detail.sourceLabel} · {badge(detail)}</Text><Text style={styles.title}>{detail.name}</Text><Text style={styles.subtitle}>{detail.brand||'브랜드 미제공'}</Text><Text style={styles.price}>{price(detail)}</Text><Text style={styles.section}>상품 정보</Text><Text style={styles.subtitle}>{detail.description||'자세한 설명은 판매처에서 확인하세요.'}</Text><Text style={styles.section}>크기</Text><Text style={styles.subtitle}>{dimensions(detail)}</Text><Text style={styles.caption}>가로 × 깊이 × 높이. 치수가 있어도 실제 배치·출입문 통과 여부는 별도 확인이 필요합니다.</Text><Text style={styles.reason}>{detail.matchReason}</Text><View style={styles.categories}>{detail.tags.map(t=><Text key={t} style={styles.tag}>{t}</Text>)}</View><Pressable disabled={selected} onPress={()=>onSave(detail)} style={[styles.primary,selected&&{opacity:.55}]}><Text style={styles.primaryText}>{selected?'✓ 내 방 후보에 저장됨':'내 방 후보로 저장'}</Text></Pressable>{detail.productUrl&&<Pressable onPress={()=>openUrl(detail.productUrl)} style={styles.secondary}><Text style={styles.link}>판매처에서 상품 보기 ↗</Text></Pressable>}<Text style={styles.sourceNote}>{detail.previewOptionId?'이 샘플은 기존 이미지 생성 서버에서 지원하는 상품입니다. 현재 화면에서는 후보로 저장합니다.':'이 상품의 사진 합성은 아직 연결되지 않았어요. 상품 탐색과 후보 저장을 먼저 이용할 수 있어요.'}</Text></ScrollView>}</SafeAreaView></Modal>
+  <Modal visible={!!detail} animationType="slide" onRequestClose={()=>setDetail(null)}><SafeAreaView style={styles.safe}>{detail&&<ScrollView contentContainerStyle={styles.content}><Pressable onPress={()=>setDetail(null)} accessibilityRole="button"><Text style={styles.link}>← 검색 결과로</Text></Pressable><ProductImage product={detail} large/><Text style={styles.badge}>{detail.sourceLabel} · {badge(detail)}</Text><Text style={styles.title}>{detail.name}</Text><Text style={styles.subtitle}>{detail.brand||'브랜드 미제공'}</Text><Text style={styles.price}>{price(detail)}</Text><Text style={styles.section}>상품 정보</Text><Text style={styles.subtitle}>{detail.description||'자세한 설명은 판매처에서 확인하세요.'}</Text><Text style={styles.section}>크기</Text><Text style={styles.subtitle}>{dimensions(detail)}</Text><Text style={styles.caption}>가로 × 깊이 × 높이. 치수가 있어도 실제 배치·출입문 통과 여부는 별도 확인이 필요합니다.</Text><RetailerDetails product={detail}/><Text style={styles.reason}>{detail.matchReason}</Text><View style={styles.categories}>{detail.tags.map(t=><Text key={t} style={styles.tag}>{t}</Text>)}</View><Pressable disabled={selected} onPress={()=>onSave(detail)} style={[styles.primary,selected&&{opacity:.55}]}><Text style={styles.primaryText}>{selected?'✓ 내 방 후보에 저장됨':'내 방 후보로 저장'}</Text></Pressable>{detail.productUrl&&<Pressable onPress={()=>openUrl(detail.productUrl)} style={styles.secondary}><Text style={styles.link}>판매처에서 상품 보기 ↗</Text></Pressable>}<Text style={styles.sourceNote}>{detail.previewOptionId?'이 샘플은 기존 이미지 생성 서버에서 지원하는 상품입니다. 현재 화면에서는 후보로 저장합니다.':'이 상품의 사진 합성은 아직 연결되지 않았어요. 상품 탐색과 후보 저장을 먼저 이용할 수 있어요.'}</Text></ScrollView>}</SafeAreaView></Modal>
   </SafeAreaView>;
 }
 const styles=StyleSheet.create({
