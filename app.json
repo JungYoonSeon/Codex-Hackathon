@@ -3,10 +3,14 @@
     "name": "RoomReady",
     "slug": "roomready",
     "version": "1.0.0",
+    "icon": "./assets/app-icon.png",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
-      "backgroundColor": "#F7F5F0"
+      "image": "./assets/roomready-logo.png",
+      "imageWidth": 250,
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
     },
     "ios": {
       "supportsTablet": true
@@ -18,12 +22,22 @@
     },
     "plugins": [
       [
+        "expo-splash-screen",
+        {
+          "image": "./assets/roomready-logo.png",
+          "imageWidth": 250,
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF"
+        }
+      ],
+      [
         "expo-image-picker",
         {
           "cameraPermission": "RoomReady uses your camera to add a room photo. It is only sent to the RoomReady server and OpenAI if you request live previews.",
           "photosPermission": "RoomReady uses a photo you select as your room. It is only sent to the RoomReady server and OpenAI if you request live previews."
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }
