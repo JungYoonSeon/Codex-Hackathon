@@ -1,8 +1,9 @@
+import { randomBytes } from 'node:crypto';
 import { createProductEditor } from './product-preview/editor.ts';
 import { createStyleRanker } from './style/recommendations.ts';
 import { createApp } from './app.ts';
 import { createOpenAIEditor } from './provider.ts';
-const token = process.env.DEMO_SESSION_TOKEN ?? '';
+const token = process.env.DEMO_SESSION_TOKEN?.trim() || randomBytes(32).toString('hex');
 if (token.length < 32) {
   console.error('Set a random DEMO_SESSION_TOKEN of at least 32 characters in server/.env. See .env.example.');
   process.exit(1);
@@ -13,7 +14,7 @@ const editor = apiKey && model ? createOpenAIEditor(apiKey, model) : undefined;
 const recommendationModel = process.env.RECOMMENDATION_MODEL?.trim() || 'gpt-4o-mini';
 const styleRanker = apiKey && recommendationModel ? createStyleRanker(apiKey, recommendationModel) : undefined;
 const productEditor = apiKey && model ? createProductEditor(apiKey, model) : undefined;
-const app = createApp({ sessionToken: token, editor, styleRanker, productEditor, allowedOrigin: process.env.ALLOWED_ORIGIN || undefined });
+const app = createApp({ sessionToken: token, editor, styleRanker, productEditor, allowedOrigin: process.env.ALLOWED_ORIGIN || undefined, developmentOrigins: process.env.NODE_ENV !== 'production' });
 const port = Number(process.env.PORT ?? 3001);
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('PORT must be an integer from 1 to 65535.');
 const server = app.listen(port, process.env.HOST ?? '0.0.0.0', () => {

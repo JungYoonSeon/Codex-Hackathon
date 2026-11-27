@@ -76,27 +76,6 @@ export function RequestScreen({ room, photo, request, live, onBack, onSubmit, on
   );
 }
 
-function LiveSettings({ live }) {
-  const { origin, token, onTokenChange, health, onCheckHealth } = live;
-  return (
-    <View style={ui.card}>
-      <Text style={ui.sectionTitle}>Live AI preview</Text>
-      <Text style={[ui.noticeText, { marginTop: 6 }]}>{PHOTO_HANDLING_NOTICE}</Text>
-      <Text style={[ui.hint, { marginTop: 10 }]}>Server: {origin || 'not configured in this build (EXPO_PUBLIC_API_URL)'}</Text>
-      <Text style={[ui.label, { marginTop: 12 }]} nativeID="token-label">Demo-session token</Text>
-      <TextInput accessibilityLabel="Demo-session token" accessibilityLabelledBy="token-label" value={token} onChangeText={onTokenChange}
-        secureTextEntry autoCapitalize="none" autoCorrect={false} placeholder="Ask the demo operator" style={ui.input} />
-      <Text style={[ui.hint, { marginTop: 5 }]}>Kept in memory only while the app is open.</Text>
-      <View style={[ui.row, { alignItems: 'center', marginTop: 10 }]}>
-        <Button small secondary title="Check server" onPress={onCheckHealth} disabled={!origin || health.status === 'checking'} />
-        {health.status === 'checking' ? <ActivityIndicator color={COLORS.green} /> : null}
-      </View>
-      {health.status === 'ok' ? (
-        <Text style={[ui.hint, { marginTop: 8 }]} accessibilityLiveRegion="polite">
-          {health.liveConfigured ? 'Server reachable. Live generation is configured (not yet proven to work).' : 'Server reachable, but live generation is not configured. Previews will be unavailable.'}
-        </Text>
-      ) : null}
-      {health.status === 'error' ? <Text style={ui.errorText} accessibilityLiveRegion="polite">{health.message}</Text> : null}
-    </View>
-  );
+function LiveSettings({live}) {
+  return <View style={ui.card}><Text style={ui.sectionTitle}>AI room preview</Text><Text style={ui.body}>{PHOTO_HANDLING_NOTICE}</Text><Button small secondary title="Check connection" onPress={live.onCheckHealth} disabled={live.health.status==='checking'}/>{live.health.status==='error'?<Text style={ui.errorText}>서비스 연결을 확인해 주세요.</Text>:null}{live.health.status==='ok'?<Text style={ui.hint}>Connected</Text>:null}</View>;
 }

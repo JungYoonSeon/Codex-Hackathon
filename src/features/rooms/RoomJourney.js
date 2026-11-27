@@ -1,3 +1,4 @@
+import { defaultApiOrigin, openGuestSession } from '../preview/session';
 import ProductPreviewSetup from "./ProductPreviewSetup";
 import { createProductPreviewService } from "../preview/productService";
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -49,7 +50,7 @@ function notifyUser(title, message, buttons) {
 }
 
 const initialConnection = {
-  origin: normalizeApiOrigin(process.env.EXPO_PUBLIC_API_URL),
+  origin: defaultApiOrigin(),
   token: "",
 };
 const copy = (value) => JSON.parse(JSON.stringify(value));
@@ -105,6 +106,16 @@ export default function RoomJourney() {
   const [connection, setConnection] = useState(initialConnection),
     [health, setHealth] = useState({ status: "idle" }),
     [wantedProduct, setWantedProduct] = useState(null);
+  const connectionRef=useRef(initialConnection),sessionTask=useRef(null);
+  const [connectionError,setConnectionError]=useState('');
+  const ensureConnection=async(force=false)=>{
+    if(!force&&connectionRef.current.token&&connectionRef.current.expiresAt>Date.now()+60000)return connectionRef.current;
+    if(sessionTask.current)return sessionTask.current;
+    const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),15000);
+    sessionTask.current=openGuestSession(defaultApiOrigin(),abort.signal).then(next=>{connectionRef.current=next;setConnection(next);setConnectionError('');return next;}).catch(error=>{setConnectionError('서비스에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.');throw error;}).finally(()=>{clearTimeout(timer);sessionTask.current=null;});
+    return sessionTask.current;
+  };
+  useEffect(()=>{ensureConnection().catch(()=>{});const timer=setInterval(()=>ensureConnection().catch(()=>{}),20*60*1000);return()=>clearInterval(timer);},[]);
   const [historyItem, setHistoryItem] = useState(null),
     [dimensionNext, setDimensionNext] = useState("workspace");
   const { state: preview, controller } = usePreviewController();
@@ -115,7 +126,7 @@ export default function RoomJourney() {
     () =>
       createLiveService({
         apiOrigin: connection.origin,
-        getToken: () => connection.token,
+        getToken: () => connectionRef.current.token,
       }),
     [connection],
   );
@@ -345,7 +356,7 @@ export default function RoomJourney() {
       focus: room.focus,
       liveService: createLiveService({
         apiOrigin: options.connection.origin,
-        getToken: () => options.connection.token,
+        getToken: () => connectionRef.current.token,
       }),
     });
     setScreen("results");
@@ -652,11 +663,6 @@ export default function RoomJourney() {
       return (
         <FurnitureDiscovery
           connection={connection}
-          onConnectionChange={(next) => {
-            invalidate();
-            setHealth({ status: "idle" });
-            setConnection({ ...next, origin: normalizeApiOrigin(next.origin) });
-          }}
           onBack={() => setScreen(searchReturn)}
           onSave={saveProduct}
           onTry={goVisualize}
@@ -739,7 +745,7 @@ export default function RoomJourney() {
           }
           initialIds={wantedProduct ? [wantedProduct.id] : selected}
           connection={connection}
-          onConnection={setConnection}
+          onEnsureConnection={ensureConnection}
           onBack={() => setScreen("workspace")}
           onSearch={search}
           onGenerate={runProductPreview}
@@ -776,7 +782,6 @@ export default function RoomJourney() {
           live={{
             origin: connection.origin,
             token: connection.token,
-            onTokenChange: (token) => setConnection({ ...connection, token }),
             health,
             onCheckHealth: checkHealth,
           }}
@@ -789,7 +794,7 @@ export default function RoomJourney() {
       return (
         <ResultsScreen
           state={preview}
-          onRetry={(id) => controller.retry(id)}
+          onRetry={async(id) => {try{await ensureConnection();controller.retry(id);}catch{}}}
           onRunAgain={() =>
             lastProductRun.current
               ? runProductPreview(lastProductRun.current)
@@ -916,6 +921,7 @@ export default function RoomJourney() {
   };
   return (
     <View style={{ flex: 1 }}>
+      {connectionError?<View style={{padding:10,backgroundColor:'#F3F5FB'}}><Text>{connectionError}</Text><Button small secondary title="다시 연결" onPress={()=>ensureConnection(true).catch(()=>{})}/></View>:null}
       {storageError ? (
         <View style={{ padding: 12, backgroundColor: "#F9E8DC" }}>
           <Text accessibilityLiveRegion="assertive">

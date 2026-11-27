@@ -190,8 +190,7 @@ export default function FurnitureForYou({
       />
       {!connection.origin || !connection.token ? (
         <Text style={s.small}>
-          Set the server connection in Search all stores to enable OpenAI. The
-          server also needs a recommendation model.
+          AI 추천 서비스에 연결 중입니다. 잠시 후 다시 시도해 주세요.
         </Text>
       ) : null}
       {message ? (
@@ -242,7 +241,7 @@ export default function FurnitureForYou({
       ))}
       <Button
         secondary
-        title="Search all stores · connection settings"
+        title="Search all stores"
         onPress={onSearch}
       />
     </View>

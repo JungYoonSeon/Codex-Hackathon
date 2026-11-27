@@ -31,12 +31,11 @@ function ProductImage({product,large=false}){
   useEffect(()=>setFailed(false),[product.imageUrl]);
   return <View style={[styles.picture,large&&styles.pictureLarge]}>{product.imageUrl&&!failed?<Image source={{uri:product.imageUrl}} resizeMode="contain" style={styles.image} onError={()=>setFailed(true)}/>:<Text style={{fontSize:large?70:42}}>{categoryOf(product).icon}</Text>}</View>;
 }
-export default function FurnitureDiscovery({onBack,onSave,onTry,savedIds=[],connection,onConnectionChange}){
+export default function FurnitureDiscovery({onBack,onSave,onTry,savedIds=[],connection}){
   const [q,setQ]=useState('');const [brand,setBrand]=useState('');const [category,setCategory]=useState('all');const [source,setSource]=useState('all');
   const [sort,setSort]=useState('relevance');const [page,setPage]=useState(1);const [revision,setRevision]=useState(0);
   const [result,setResult]=useState({products:[],sources:[],links:[],hasMore:false});const [loading,setLoading]=useState(false);const [error,setError]=useState('');
-  const [detail,setDetail]=useState(null);const [settings,setSettings]=useState(false);
-  const [draftOrigin,setDraftOrigin]=useState(connection.origin);const [draftToken,setDraftToken]=useState(connection.token);
+  const [detail,setDetail]=useState(null);
   const run=useRef(0);
   useEffect(()=>{
     const id=++run.current;const controller=new AbortController();let deadline;
@@ -53,7 +52,7 @@ export default function FurnitureDiscovery({onBack,onSave,onTry,savedIds=[],conn
         deadline=setTimeout(()=>controller.abort(),15000);
         const response=await fetch(`${connection.origin.replace(/\/$/,'')}/products?${query}`,{headers:{Authorization:`Bearer ${connection.token}`},signal:controller.signal});
         const data=await response.json();
-        if(!response.ok)throw new Error(response.status===401?'연결 설정의 데모 세션 토큰을 확인해 주세요.':data.message||'검색을 완료하지 못했어요.');
+        if(!response.ok)throw new Error(response.status===401?'연결이 만료되었습니다. 다시 연결한 후 검색해 주세요.':data.message||'검색을 완료하지 못했어요.');
         if(!Array.isArray(data.products)||!Array.isArray(data.sources))throw new Error('상품 응답을 읽지 못했어요.');
         if(id===run.current)setResult(data);
       }catch(e){if(id===run.current){setError(e.name==='AbortError'?'검색 시간이 길어지고 있어요. 다시 시도해 주세요.':e.message||'서버에 연결하지 못했어요.');setResult({products:[],sources:[],hasMore:false,links:retailerLinks(input)});}}
@@ -63,15 +62,10 @@ export default function FurnitureDiscovery({onBack,onSave,onTry,savedIds=[],conn
   },[q,brand,category,source,sort,page,connection.origin,connection.token,revision]);
   const change=(setter,value)=>{setPage(1);setter(value);};
   const selected=detail&&savedIds.includes(detail.id);
-  const applyConnection=()=>{
-    const origin=draftOrigin.trim().replace(/\/$/,'');
-    if(origin&&!/^https?:\/\/[^\s]+$/.test(origin)){Alert.alert('주소 확인','http:// 또는 https://로 시작하는 서버 주소를 입력해 주세요.');return;}
-    onConnectionChange({origin,token:draftToken.trim()});setSettings(false);setPage(1);
-  };
   return <SafeAreaView style={styles.safe}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
-    <View style={styles.header}><Pressable accessibilityRole="button" accessibilityLabel="이전 화면" onPress={onBack}><Text style={styles.back}>‹</Text></Pressable><Text style={styles.brand}>roomready</Text><Pressable onPress={()=>setSettings(!settings)} style={styles.settingsButton}><Text style={styles.link}>연결 설정</Text></Pressable></View>
+    <View style={styles.header}><Pressable accessibilityRole="button" accessibilityLabel="이전 화면" onPress={onBack}><Text style={styles.back}>‹</Text></Pressable><Text style={styles.brand}>roomready</Text></View>
     <Text style={styles.eyebrow}>FIND YOUR NEXT PIECE</Text><Text style={styles.title}>어떤 가구를 찾나요?</Text><Text style={styles.subtitle}>상품명이나 브랜드로 찾고, 종류별로 둘러보세요.</Text>
-    {settings&&<View style={styles.panel}><Text style={styles.cardTitle}>실시간 상품 검색 연결</Text><Text style={styles.caption}>팀의 백엔드 주소와 데모 세션 토큰을 입력하세요. 판매처 API 키는 서버에서만 설정합니다.</Text><TextInput accessibilityLabel="백엔드 주소" autoCapitalize="none" autoCorrect={false} style={styles.input} placeholder="https://your-backend.example" value={draftOrigin} onChangeText={setDraftOrigin}/><TextInput accessibilityLabel="데모 세션 토큰" autoCapitalize="none" autoCorrect={false} secureTextEntry style={styles.input} placeholder="데모 세션 토큰" value={draftToken} onChangeText={setDraftToken}/><Pressable onPress={applyConnection} style={styles.primary}><Text style={styles.primaryText}>연결 적용</Text></Pressable></View>}
+
     <TextInput accessibilityLabel="상품명 검색" style={styles.input} placeholder="상품명 검색 · 예: 원목 책상, BILLY" value={q} onChangeText={v=>change(setQ,v)} maxLength={150} returnKeyType="search" onSubmitEditing={()=>setRevision(v=>v+1)}/>
     <TextInput accessibilityLabel="브랜드 검색" style={styles.input} placeholder="브랜드 · 예: IKEA, Herman Miller" value={brand} onChangeText={v=>change(setBrand,v)} maxLength={100} autoCapitalize="none" returnKeyType="search"/>
     <Text style={styles.section}>종류별로 둘러보기</Text><View style={styles.categories}>{productCategories.map(c=><Chip key={c.id} label={`${c.icon} ${c.label}`} selected={category===c.id} onPress={()=>change(setCategory,c.id)}/>)}</View>

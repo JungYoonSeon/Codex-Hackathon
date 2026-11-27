@@ -10,7 +10,7 @@ export const DEFAULT_TIMEOUTS = { health: 10_000, recommendations: 20_000, previ
 
 const FALLBACK_ERRORS = {
   400: ['INVALID_INPUT', 'The server could not use this request. Check your inputs.', false],
-  401: ['UNAUTHORIZED', 'Enter the current restricted demo-session token.', false],
+  401: ['UNAUTHORIZED', 'Your connection expired. Reconnect and retry.', false],
   409: ['DUPLICATE_REQUEST', 'This attempt was already used. Retry to start a new attempt.', true],
   413: ['UPLOAD_TOO_LARGE', 'The photo is too large. Choose a smaller photo.', false],
   429: ['BUSY', 'The preview server is busy. Try this option again shortly.', true],
@@ -78,7 +78,7 @@ export function createLiveService({ apiOrigin, getToken, fetchImpl, createFormDa
 
   function authHeader() {
     const token = (getToken?.() ?? '').trim();
-    if (!token) throw apiError('UNAUTHORIZED', 'Enter the restricted demo-session token from the team before requesting live previews.', false);
+    if (!token) throw apiError('UNAUTHORIZED', 'The service is connecting. Please try again shortly.', false);
     return { Authorization: `Bearer ${token}` };
   }
 

@@ -33,7 +33,7 @@ Photo visualization now accepts any product returned by the registered retailer 
 
 Response: `{ "mode": "openai", "items": [{ "id": "catalog-id", "reason": "..." }] }`.
 
-The server requires `OPENAI_API_KEY`. Optional `RECOMMENDATION_MODEL` defaults to `gpt-4o-mini`; use a model supporting Responses API structured outputs. The image provider continues to use `IMAGE_MODEL` separately. The client never receives the provider key. A connected API origin and session token can be entered in Search all stores → connection settings.
+The server requires `OPENAI_API_KEY`. Optional `RECOMMENDATION_MODEL` defaults to `gpt-4o-mini`; use a model supporting Responses API structured outputs. The image provider continues to use `IMAGE_MODEL` separately. The client never receives the provider key. The app automatically obtains a short-lived anonymous session from POST /session. Users never enter a token or provider key. Set EXPO_PUBLIC_API_URL at build time for a separately hosted API; same-origin web hosting is auto-detected. Set ALLOWED_ORIGIN on the backend for a separately hosted web frontend.
 
 Requests accept at most 40 products, return at most 8 unique IDs from that list, time out after 25 seconds server-side / 30 seconds client-side, and have no automatic paid retries. Structured outputs and runtime validation reject unknown/duplicate IDs. A shared session allows one concurrent selection and 60 attempts/hour. Style reasoning does not assert dimensions, safety, delivery, or physical fit. A failure leaves catalog tag ordering clearly labeled.
 
@@ -50,3 +50,9 @@ No new automated test files were added. Use the actual sample path to review the
 `origin/feature/retailer-data` is merged into this feature branch. `retailerEvidence.ts` bridges its evidence arrays, shipping length/quantity/count, materials and care into the evaluator. Conflicting package facts remain confirmation-needed. Destination-dependent delivery stays unknown. IKEA records are verified snapshots, not live search or preview-enabled products. Main remains unchanged.
 
 `IMAGE_MODEL` defaults to `gpt-image-1.5` when not configured. Product image uploads and generation use the existing session token and shared preview rate/concurrency limits. Product IDs must exist in the server catalog; arbitrary client image URLs are not accepted.
+
+## Automatic app connection
+
+All customer-facing backend-address and demo-token inputs have been removed. POST /session issues a random guest capability lasting 30 minutes; issuance is rate-limited by IP and authenticated requests are rate-limited per session. The app refreshes it automatically and keeps it in memory. The optional DEMO_SESSION_TOKEN is only a backwards-compatible operator credential, never returned to the app. Local development discovers the API on port 3001; deployed native builds use EXPO_PUBLIC_API_URL. Provider keys remain in server environment variables.
+
+Live verification completed before the final connection-UI change: IKEA GLOSTAD reference-image generation returned HTTP 200 in about 9 seconds; OpenAI style selection returned the two actual registered IKEA IDs. Subsequent automatic-session changes were not tested at the user's request.

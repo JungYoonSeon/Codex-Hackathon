@@ -75,7 +75,7 @@ function ErrorPanel({ error, saved, onRunAgain, onEditRequest, onUseSample, onRe
         {error.retryable ? <Button title="Try again" onPress={onRunAgain} /> : null}
         {sampleMismatch ? <Button title="Restore sample inputs" onPress={onRestoreSample} /> : null}
         {liveUnavailable ? <Button title="Try the sample room instead" onPress={onUseSample} /> : null}
-        {error.code === 'UNAUTHORIZED' ? <Button title="Enter demo token" onPress={onEditRequest} /> : null}
+        {error.code === 'UNAUTHORIZED' ? <Button title="Reconnect and retry" onPress={onEditRequest} /> : null}
       </View>
     </View>
   );

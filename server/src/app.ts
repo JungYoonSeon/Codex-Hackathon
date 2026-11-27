@@ -1,3 +1,4 @@
+import { createGuestSessions } from './guestSessions.ts';
 import { createProductRegistry } from './product-preview/registry.ts';
 import { createProductPreviewRouter } from './product-preview/router.ts';
 import type { ProductEditor } from './product-preview/editor.ts';
@@ -16,21 +17,23 @@ import { validateOutput, type ImageEditor } from './provider.ts';
 
 export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 export interface AppConfig {
-  sessionToken: string; editor?: ImageEditor; styleRanker?: StyleRanker; productEditor?: ProductEditor; allowedOrigin?: string;
+  sessionToken: string; editor?: ImageEditor; styleRanker?: StyleRanker; productEditor?: ProductEditor; allowedOrigin?: string; developmentOrigins?: boolean;
   timeoutMs?: number; maxConcurrent?: number; maxPreviewsPerHour?: number;
 }
 export function createApp(config: AppConfig) {
   if (config.sessionToken.length < 32) throw new Error('DEMO_SESSION_TOKEN must contain at least 32 characters.');
   const app = express(); app.disable('x-powered-by');
+  const guests=createGuestSessions();
   let active = 0; let used = 0; let windowStart = Date.now();
   const seen = new Set<string>(); // Bounded by hourly paid-attempt budget; no image retention.
   const cap = config.maxConcurrent ?? 1;
   const timeoutMs = config.timeoutMs ?? 170_000;
   const maxPreviews = config.maxPreviewsPerHour ?? 12;
   app.use((_req, res, next) => { res.setHeader('Cache-Control', 'no-store'); res.setHeader('X-Content-Type-Options', 'nosniff'); next(); });
-  if (config.allowedOrigin) app.use((req, res, next) => {
-    if (req.headers.origin === config.allowedOrigin) {
-      res.setHeader('Access-Control-Allow-Origin', config.allowedOrigin!);
+  if (config.allowedOrigin || config.developmentOrigins) app.use((req, res, next) => {
+    const origin=req.headers.origin;
+    if (origin && (origin === config.allowedOrigin || (config.developmentOrigins && /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)))) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
       res.setHeader('Vary', 'Origin');
       res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -39,11 +42,14 @@ export function createApp(config: AppConfig) {
     next();
   });
   app.get('/health', (_req, res) => res.json({ status: 'ok', liveConfigured: !!config.editor, productPreviewConfigured: !!config.productEditor, provider: 'OpenAI' }));
+  app.post('/session', (req,res)=>res.status(201).json(guests.issue(req.ip ?? req.socket.remoteAddress ?? 'unknown')));
   const authenticate: RequestHandler = (req, _res, next) => {
+    const guestToken=(req.headers.authorization ?? '').replace(/^Bearer /,'');
+    if(guests.authorize(guestToken)){next();return;}
     const supplied = Buffer.from(req.headers.authorization ?? '');
     const expected = Buffer.from(`Bearer ${config.sessionToken}`);
     if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected))
-      return next(new AppError(401, 'UNAUTHORIZED', 'Enter the current restricted demo-session token.'));
+      return next(new AppError(401, 'UNAUTHORIZED', 'Your session expired. Reconnect and try again.'));
     next();
   };
   const registry=createProductRegistry();

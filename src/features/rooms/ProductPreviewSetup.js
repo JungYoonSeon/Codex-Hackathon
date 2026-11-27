@@ -10,7 +10,7 @@ export default function ProductPreviewSetup({
   products,
   initialIds,
   connection,
-  onConnection,
+  onEnsureConnection,
   onBack,
   onSearch,
   onGenerate,
@@ -23,13 +23,10 @@ export default function ProductPreviewSetup({
   const [activeId, setActiveId] = useState(initialIds[0] ?? products[0]?.id);
   const [targets, setTargets] = useState(room.visualTargets ?? {}),
     [references, setReferences] = useState(room.productReferences ?? {});
-  const [showConnection, setShowConnection] = useState(false);
   const [description, setDescription] = useState(
     [room.mood, room.color].filter(Boolean).join(" "),
   );
-  const [origin, setOrigin] = useState(connection.origin),
-    [token, setToken] = useState(connection.token),
-    [error, setError] = useState(""),
+  const [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   const chosen = products.filter((p) => ids.includes(p.id));
   const active = chosen.find((p) => p.id === activeId) ?? chosen[0];
@@ -99,7 +96,12 @@ export default function ProductPreviewSetup({
         onLayout={(event) => setImageWidth(event.nativeEvent.layout.width)}
         onPress={(event) => {
           if (!active) return;
-          const { locationX, locationY } = event.nativeEvent;
+          const native=event.nativeEvent;
+          const rect=event.currentTarget?.getBoundingClientRect?.();
+          const rawX=native.locationX ?? (rect ? (native.clientX ?? event.clientX)-rect.left : undefined);
+          const rawY=native.locationY ?? (rect ? (native.clientY ?? event.clientY)-rect.top : undefined);
+          const locationX=Number.isFinite(rawX)?rawX:imageWidth/2;
+          const locationY=Number.isFinite(rawY)?rawY:(imageWidth/aspect)*.75;
           setTargets({
             ...targets,
             [active.id]: {
@@ -201,60 +203,6 @@ export default function ProductPreviewSetup({
         value={description}
         onChangeText={setDescription}
       />
-      <Button
-        small
-        secondary
-        title={
-          origin && token
-            ? "Server connected · settings"
-            : "Connect preview server"
-        }
-        onPress={() => setShowConnection(!showConnection)}
-      />
-      {showConnection ? (
-        <View style={ui.card}>
-          <Text style={ui.sectionTitle}>
-            One-time connection for this app session
-          </Text>
-          <Text style={s.small}>
-            Use the backend URL and DEMO_SESSION_TOKEN from server/.env. The
-            OpenAI API key stays on the server.
-          </Text>
-          <TextInput
-            accessibilityLabel="Preview server URL"
-            style={ui.input}
-            placeholder="https://your-server"
-            autoCapitalize="none"
-            value={origin}
-            onChangeText={setOrigin}
-          />
-          <TextInput
-            accessibilityLabel="Preview session token"
-            secureTextEntry
-            style={ui.input}
-            autoCapitalize="none"
-            placeholder="DEMO_SESSION_TOKEN"
-            value={token}
-            onChangeText={setToken}
-          />
-          <Button
-            title="Save connection"
-            onPress={() => {
-              const next = {
-                origin: origin.trim().replace(/\/+$/, ""),
-                token: token.trim(),
-              };
-              if (!/^https?:\/\/[^\s/]+/.test(next.origin) || !next.token) {
-                setError("Enter the backend address and demo-session token.");
-                return;
-              }
-              onConnection(next);
-              setShowConnection(false);
-              setError("");
-            }}
-          />
-        </View>
-      ) : null}
       <Notice title="Live image generation">
         Generate sends the selected room photo and product reference to our
         server and OpenAI. Position and size in the generated picture are
@@ -269,24 +217,13 @@ export default function ProductPreviewSetup({
         }
         disabled={busy || !chosen.length}
         onPress={async () => {
-          if (!/^https?:\/\/[^\s/]+/.test(origin.trim()) || !token.trim()) {
-            setShowConnection(true);
-            setError(
-              "Connect the preview server once. This connection will be reused for other rooms.",
-            );
-            return;
-          }
           if (chosen.some((p) => !targets[p.id])) {
             setError("Tap a target point for each selected product.");
             return;
           }
           setBusy(true);
           try {
-            const next = {
-              origin: origin.trim().replace(/\/+$/, ""),
-              token: token.trim(),
-            };
-            onConnection(next);
+            const next = await onEnsureConnection();
             await onSaveTargets({
               visualTargets: targets,
               productReferences: references,
