@@ -1,0 +1,37 @@
+{
+  "candidates": [
+    {
+      "id": "sofa-linen",
+      "name": "Demo Compact Linen Sofa",
+      "category": "sofa",
+      "widthCm": 160,
+      "depthCm": 85,
+      "heightCm": 82,
+      "tags": [
+        "beige",
+        "fabric",
+        "minimal",
+        "compact"
+      ],
+      "description": "Fictional compact two-seat beige linen sofa with square arms, two back cushions and four oak legs.",
+      "matchReason": "Matched on category and dimensions; recognized preferences: compact, beige."
+    },
+    {
+      "id": "sofa-sage",
+      "name": "Demo Sage Sofa",
+      "category": "sofa",
+      "widthCm": 200,
+      "depthCm": 95,
+      "heightCm": 86,
+      "tags": [
+        "green",
+        "sage",
+        "fabric",
+        "modern"
+      ],
+      "description": "Fictional sage-green upholstered sofa with rounded arms, two back cushions and four dark wood legs.",
+      "matchReason": "Matched on category and dimensions."
+    }
+  ],
+  "notice": "Demo furniture. Dimensions only reject obviously oversized items; existing furniture, doorways and exact fit are not checked."
+}

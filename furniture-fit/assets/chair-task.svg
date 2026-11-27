@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 60 60" role="img" aria-label="Task chair, top-down demo schematic, 60 by 60 centimeters">
+<title>Task chair: fictional demo schematic</title>
+<rect x="1" y="1" width="58" height="58" rx="3" fill="#dce8e5" stroke="#28594e" stroke-width="2"/>
+<path d="M 5 55 H 55" stroke="#28594e" stroke-width="2"/>
+<text x="30.0" y="28.0" text-anchor="middle" font-family="sans-serif" font-size="5.0" fill="#173d34">Task chair</text>
+<text x="30.0" y="38.0" text-anchor="middle" font-family="sans-serif" font-size="4.285714285714286" fill="#173d34">60 × 60 cm</text>
+</svg>
