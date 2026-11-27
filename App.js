@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import FurnitureDiscovery, { SavedFurniture } from './mobile/FurnitureDiscovery';
 
 const COLORS = {
   ink: '#24332E', muted: '#68756F', green: '#386B55', pale: '#EAF0E8',
@@ -48,6 +49,11 @@ export default function App() {
   const [photo, setPhoto] = useState(null);
   const [placements, setPlacements] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [savedProducts, setSavedProducts] = useState([]);
+  const [discoveryReturn, setDiscoveryReturn] = useState('home');
+  const [catalogConnection, setCatalogConnection] = useState({ origin: process.env.EXPO_PUBLIC_API_URL || '', token: '' });
+  const exploreFurniture = () => { setDiscoveryReturn(screen === 'saved' ? 'saved' : screen); setScreen('discover'); };
+  const saveProduct = (product) => setSavedProducts(items => items.some(p => p.id === product.id) ? items : [...items, product]);
 
   const choosePhoto = async (camera) => {
     const permission = camera
@@ -63,6 +69,7 @@ export default function App() {
     if (!result.canceled && result.assets?.[0]?.uri) {
       setPhoto(result.assets[0].uri);
       setRoom('photo');
+      setScreen('planner');
     }
   };
 
@@ -77,6 +84,9 @@ export default function App() {
     setSelected(null);
   };
   const startSample = () => { setRoom('sample'); setPhoto(null); setScreen('planner'); };
+
+  if (screen === 'discover') return <FurnitureDiscovery onBack={() => setScreen(discoveryReturn)} onSave={saveProduct} savedIds={savedProducts.map(p => p.id)} connection={catalogConnection} onConnectionChange={setCatalogConnection} />;
+  if (screen === 'saved') return <SavedFurniture products={savedProducts} onBack={() => setScreen('home')} onExplore={exploreFurniture} onRemove={id => setSavedProducts(items => items.filter(p => p.id !== id))} />;
 
   if (screen === 'home') return (
     <SafeAreaView style={styles.safe}>
@@ -93,7 +103,9 @@ export default function App() {
           <View style={styles.rug}><View style={styles.sofa}><View style={styles.sofaCushion} /><View style={styles.sofaCushion} /></View><View style={styles.lamp}><Text style={{ fontSize: 28 }}>◉</Text></View></View>
           <View style={styles.artCaption}><Text style={styles.artCaptionTitle}>A room to begin with</Text><Text style={styles.artCaptionSub}>Illustrative sample room</Text></View>
         </View>
-        <Button title="Try a sample room   →" onPress={startSample} />
+        <Button title="가구 검색 · 브랜드별로 둘러보기   →" onPress={exploreFurniture} />
+        <Pressable onPress={() => setScreen('saved')} style={styles.textAction}><Text style={styles.textActionText}>내 방 후보 보기 ({savedProducts.length})</Text></Pressable>
+        <Button title="Try a sample room   →" secondary onPress={startSample} />
         <Pressable onPress={() => setScreen('choose')} style={styles.textAction}><Text style={styles.textActionText}>Choose a room or take a photo</Text><Text style={styles.textArrow}>↗</Text></Pressable>
       </ScrollView>
     </SafeAreaView>
@@ -138,9 +150,9 @@ export default function App() {
       {placements.length === 0 ? <View style={styles.emptyNotice}><Text style={styles.emptyIcon}>＋</Text><Text style={styles.emptyText}>Add a piece below to start arranging your room.</Text></View> : <View style={styles.placedList}><Text style={styles.sectionTitle}>In your plan</Text>{placements.map((item, i) => <Pressable key={item.instanceId} accessibilityRole="button" accessibilityLabel={`Select ${item.name}, item ${i + 1}`} onPress={() => setSelected(item.instanceId)} style={[styles.listItem, selected === item.instanceId && styles.listItemSelected]}><Text style={styles.listEmoji}>{item.emoji}</Text><View style={{ flex: 1 }}><Text style={styles.listName}>{item.name}</Text><Text style={styles.listSize}>{item.size} · demo dimensions</Text></View><Text style={selected === item.instanceId ? styles.selectedLabel : styles.selectLabel}>{selected === item.instanceId ? 'SELECTED' : 'Select'}</Text></Pressable>)}</View>}
       {selectedItem ? <View style={styles.controls}><Text style={styles.sectionTitle}>Move {selectedItem.name}</Text><View style={styles.moveRow}><Button title="← Left" small secondary onPress={() => move(-8, 0)} /><Button title="↑ Up" small secondary onPress={() => move(0, -8)} /><Button title="↓ Down" small secondary onPress={() => move(0, 8)} /><Button title="Right →" small secondary onPress={() => move(8, 0)} /></View><Button title="Remove from plan" small secondary onPress={removeSelected} /></View> : null}
       <View style={styles.catalogHeader}><View><Text style={styles.eyebrow}>THE STARTER SET</Text><Text style={styles.sectionTitle}>Choose furniture</Text></View><Text style={styles.catalogCount}>3 DEMO PIECES</Text></View>
-      <View style={styles.connectCard}><View style={styles.connectIcon}><Text style={styles.connectIconText}>⌘</Text></View><View style={{ flex: 1 }}><Text style={styles.connectTitle}>Connect your furniture catalog</Text><Text style={styles.connectSub}>Catalog connection is a placeholder. Start with the demo pieces below.</Text></View><Text style={styles.comingSoon}>SOON</Text></View>
+      <Pressable onPress={exploreFurniture} style={styles.connectCard}><View style={styles.connectIcon}><Text style={styles.connectIconText}>⌕</Text></View><View style={{ flex: 1 }}><Text style={styles.connectTitle}>상품명·브랜드로 가구 찾기</Text><Text style={styles.connectSub}>IKEA · Amazon · eBay 검색과 종류별 탐색</Text></View><Text style={styles.comingSoon}>OPEN →</Text></Pressable>
       {PRODUCTS.map((product) => <View key={product.id} style={styles.productRow}><View style={[styles.productThumb, { backgroundColor: product.color }]}><Text style={styles.productEmoji}>{product.emoji}</Text></View><View style={{ flex: 1 }}><Text style={styles.productName}>{product.name}</Text><Text style={styles.productMeta}>{product.size} · illustrative</Text></View><Pressable accessibilityRole="button" accessibilityLabel={`Add ${product.name}`} onPress={() => addProduct(product)} style={styles.addButton}><Text style={styles.addButtonText}>＋ Add</Text></Pressable></View>)}
-      <View style={styles.bottomNote}><Text style={styles.bottomNoteText}>Demo dimensions are illustrative. The sample plan checks drawn furniture overlaps only.</Text></View>
+      <View style={styles.bottomNote}><Text style={styles.bottomNoteText}>Demo dimensions are illustrative. The sample plan does not check physical fit or furniture overlaps.</Text></View>
     </ScrollView></SafeAreaView>
   );
 }

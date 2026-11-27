@@ -44,3 +44,7 @@ The catalog contains four clearly fictional furniture items. Matching filters ob
 ## Earlier prototype
 
 `furniture-fit/` contains the earlier measured-space/overlap module and its 18 tests. It is retained for reference but is **outside the revised sprint scope**; do not connect its collision or exact-fit UI to this P0 flow.
+
+## Product discovery
+
+The home screen now includes **가구 검색 · 브랜드별로 둘러보기** and **내 방 후보 보기**. Search by product name and brand, browse 12 categories, filter retailers, inspect product details and save candidates during the session. Sixteen clearly labeled demo products are available immediately. IKEA/Amazon/eBay search links open the retailer; Amazon/eBay in-app search needs separate retailer API credentials, and IKEA in-app data uses an authorized feed. Configure connections in the discovery screen and `server/.env`; see the product-discovery section in the backend README. External products are not yet connected to photo generation.

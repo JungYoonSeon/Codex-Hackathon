@@ -61,3 +61,32 @@ Keep this persistent process running on the team's machine/runtime and expose it
 ## Implementation sources
 
 The provider adapter follows the official [OpenAI image-edit API](https://developers.openai.com/api/reference/resources/images/methods/edit) and [image generation guide](https://developers.openai.com/api/docs/guides/image-generation). Dependencies are locked in `package-lock.json`; an actual enabled model must still be verified by the team.
+
+## Product discovery (new)
+
+The native home screen now opens product discovery: product-name/brand search, 12 categories, retailer filters, product details, retailer links, price sorting within currencies, pagination and a session-only shortlist. The 16 fictional sample products work without backend setup. Real retailer data is never silently replaced with samples.
+
+`GET /products?q=desk&brand=&category=desk&source=all&sort=relevance&page=1` uses the same demo-session Bearer authentication. It returns `products`, per-retailer `sources` connection status, `hasMore`, `page`, and external retailer search `links`. Source values: `all`, `demo`, `amazon`, `ebay`, `ikea`. Shared product schema and categories live in `shared/discovery.ts`. Dimensions and prices are optional: missing data is not inferred.
+
+- **Amazon:** official [Creators API SearchItems](https://affiliate-program.amazon.com/creatorsapi/docs/en-us/api-reference/operations/search-items), with [OAuth authentication](https://affiliate-program.amazon.com/creatorsapi/docs/en-us/get-started/using-curl). Add `AMAZON_CLIENT_ID`, `AMAZON_CLIENT_SECRET`, `AMAZON_PARTNER_TAG`; set marketplace and credential version as shown in `.env.example`. Account/marketplace API approval is required. Connector implemented; live credentials have not been supplied or validated. This version supports configured US/UK/JP marketplace domains.
+- **eBay:** official [Browse API](https://developer.ebay.com/develop/api/buy/browse_api) plus application OAuth. Add `EBAY_CLIENT_ID` and `EBAY_CLIENT_SECRET` for production API access. US marketplace currently. Brand text is included in keyword search, not claimed as a verified brand facet. Connector implemented; live access remains unverified.
+- **IKEA:** official-site search links work without a server API key. A public self-service catalog API signup was not confirmed in this research; IKEA's [Knowledge Hub](https://ingress.prod.knowledge.ikea.net/) describes organizational APIs. To use an authorized product feed, set `IKEA_CATALOG_PATH` to an absolute JSON file path. It is a curated feed, not real-time stock. No unofficial IKEA endpoint is called.
+
+In the phone's discovery screen, open **연결 설정** and enter the reachable backend origin and demo-session token. Provider credentials stay server-side. Restart the backend after changing `.env`. Search calls have a 12-second provider budget and 15-second client timeout; one provider's failure does not discard other provider results. Searches are bounded to four simultaneous requests and 60 requests/minute per demo process.
+
+IKEA feed shape (array of records; replace placeholders with verified data you have permission to use):
+
+```json
+[{
+  "id": "verified-article-id",
+  "name": "Verified product name",
+  "category": "shelf",
+  "description": "Verified description",
+  "tags": ["wood"],
+  "productUrl": "https://www.ikea.com/kr/ko/p/verified-product-url/"
+}]
+```
+
+Optional fields: `imageUrl` (IKEA-hosted HTTPS), `dimensions: {widthCm, depthCm, heightCm}`, and `price: {amount, currency}`. Product URLs must be on ikea.com. Do not add guessed prices or dimensions. Prices are current-page listings, grouped by currency without conversion or shipping estimates; confirm them at the retailer.
+
+Discovery/shortlisting does not yet make arbitrary retailer products eligible for the existing image-edit endpoint. That endpoint still uses four owned sample references. External product imagery, measurements and preview eligibility need a separate verified import step before photo generation.

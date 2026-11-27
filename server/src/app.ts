@@ -4,6 +4,7 @@ import sharp from 'sharp';
 import { timingSafeEqual } from 'node:crypto';
 import type { ErrorRequestHandler, RequestHandler } from 'express';
 import { catalog } from './catalog.ts';
+import { createDiscoveryRouter } from './discovery/router.ts';
 import { recommend } from './matcher.ts';
 import { parse, recommendationsSchema, previewSchema } from './validation.ts';
 import { AppError, providerError } from './errors.ts';
@@ -41,6 +42,7 @@ export function createApp(config: AppConfig) {
       return next(new AppError(401, 'UNAUTHORIZED', 'Enter the current restricted demo-session token.'));
     next();
   };
+  app.use('/products', authenticate, createDiscoveryRouter());
   app.post('/recommendations', authenticate, express.json({ limit: '16kb' }), (req, res) => {
     const input = parse(recommendationsSchema, req.body);
     res.json(recommend(input.room, input.request));
