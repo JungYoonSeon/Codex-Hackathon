@@ -6,3 +6,9 @@ node_modules/
 server/work/
 server/artifacts/
 *.log
+# Expo / Metro
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+*.tsbuildinfo
