@@ -1,3 +1,5 @@
+import ProductPreviewSetup from "./ProductPreviewSetup";
+import { createProductPreviewService } from "../preview/productService";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Platform, Text, View } from "react-native";
 import HomeScreen from "../../screens/HomeScreen";
@@ -38,9 +40,10 @@ import {
 } from "./projectStore";
 
 function notifyUser(title, message, buttons) {
-  if (Platform.OS === 'web') {
+  if (Platform.OS === "web") {
     if (buttons) {
-      if (window.confirm(`${title}\n${message}`)) buttons.find(button => button.style === 'destructive')?.onPress?.();
+      if (window.confirm(`${title}\n${message}`))
+        buttons.find((button) => button.style === "destructive")?.onPress?.();
     } else window.alert(`${title}\n${message}`);
   } else Alert.alert(title, message, buttons);
 }
@@ -56,6 +59,7 @@ const mergeProducts = (existing, items) => [
 function productsFromPreview(state) {
   return state.candidates.map(
     (candidate) =>
+      candidate.catalogProduct ??
       discoveryDemoProducts.find((p) => p.previewOptionId === candidate.id) ?? {
         id: `demo:${candidate.id}`,
         name: candidate.name,
@@ -77,7 +81,7 @@ function previewsFor(state) {
     (state?.candidates ?? [])
       .filter((c) => state.results[c.id]?.status === "ready")
       .map((c) => [
-        `demo:${c.id}`,
+        c.catalogProduct ? c.id : `demo:${c.id}`,
         {
           photoId: state.photo.photoId,
           source: state.results[c.id].imageSource,
@@ -231,11 +235,11 @@ export default function RoomJourney() {
       return;
     }
     if (!roomDimensions(room)) {
-      setDimensionNext("request");
+      setDimensionNext("product-setup");
       setScreen("dimensions");
       return;
     }
-    setScreen("request");
+    setScreen("product-setup");
   };
   const applySample = async () => {
     invalidate();
@@ -256,7 +260,9 @@ export default function RoomJourney() {
     setWantedProduct(null);
     setScreen("workspace");
   };
+  const lastProductRun = useRef(null);
   const runPreview = (next) => {
+    lastProductRun.current = null;
     const dimensions = roomDimensions(room);
     if (!dimensions || !room.photo) return;
     invalidate();
@@ -303,6 +309,54 @@ export default function RoomJourney() {
         inputVersion: version.current,
       },
       { service, mode: base.mode },
+    );
+  };
+  const runProductPreview = (options) => {
+    const dimensions = roomDimensions(room);
+    if (!dimensions || !room.photo) return;
+    invalidate();
+    lastProductRun.current = options;
+    const products = mergeProducts(room.products, options.products);
+    const request = {
+      category: options.products[0].category,
+      description: options.description,
+    };
+    const snapshot = {
+      ...room,
+      products,
+      request,
+      visualTargets: options.targets,
+      productReferences: options.references,
+    };
+    const attempt = snapshotAttempt(
+      { ...snapshot, latestPreview: null },
+      "Product preview requested",
+    );
+    runRoom.current = { ...snapshot, attemptId: attempt.id };
+    commit({
+      ...dataRef.current,
+      rooms: dataRef.current.rooms.map((r) =>
+        r.id === room.id ? snapshot : r,
+      ),
+      attempts: [attempt, ...dataRef.current.attempts],
+    });
+    const service = createProductPreviewService({
+      ...options,
+      focus: room.focus,
+      liveService: createLiveService({
+        apiOrigin: options.connection.origin,
+        getToken: () => options.connection.token,
+      }),
+    });
+    setScreen("results");
+    controller.start(
+      {
+        room: dimensions,
+        photo: room.photo,
+        request,
+        inputVersion: version.current,
+      },
+      { service, mode: "live" },
     );
   };
   useEffect(() => {
@@ -605,6 +659,7 @@ export default function RoomJourney() {
           }}
           onBack={() => setScreen(searchReturn)}
           onSave={saveProduct}
+          onTry={goVisualize}
           savedIds={room?.products.map((p) => p.id) ?? []}
         />
       );
@@ -674,6 +729,27 @@ export default function RoomJourney() {
           }}
         />
       );
+    if (screen === "product-setup")
+      return (
+        <ProductPreviewSetup
+          key={`${room.id}-${wantedProduct?.id ?? "all"}`}
+          room={room}
+          products={
+            room.products.length ? room.products : discoveryDemoProducts
+          }
+          initialIds={wantedProduct ? [wantedProduct.id] : selected}
+          connection={connection}
+          onConnection={setConnection}
+          onBack={() => setScreen("workspace")}
+          onSearch={search}
+          onGenerate={runProductPreview}
+          onSaveTargets={(patch) => updateRoom(room.id, patch)}
+          onSavedDemo={() => {
+            setWantedProduct(null);
+            setScreen("request");
+          }}
+        />
+      );
     if (screen === "request")
       return (
         <RequestScreen
@@ -714,10 +790,14 @@ export default function RoomJourney() {
         <ResultsScreen
           state={preview}
           onRetry={(id) => controller.retry(id)}
-          onRunAgain={() => runPreview(room.request)}
+          onRunAgain={() =>
+            lastProductRun.current
+              ? runProductPreview(lastProductRun.current)
+              : runPreview(room.request)
+          }
           onEditRequest={() => {
             invalidate();
-            setScreen("request");
+            setScreen(lastProductRun.current ? "product-setup" : "request");
           }}
           onStartAgain={() => {
             invalidate();

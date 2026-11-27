@@ -23,6 +23,7 @@ export interface DiscoveryDeps {
   loadVerifiedRecords: () => DiscoveryProduct[];
   searchCoupang: typeof searchCoupang;
   providerTimeoutMs: number;
+  onProducts?: (products: DiscoveryProduct[]) => void;
 }
 
 export function createDiscoveryRouter(overrides: Partial<DiscoveryDeps> = {}){
@@ -96,6 +97,7 @@ export function createDiscoveryRouter(overrides: Partial<DiscoveryDeps> = {}){
         return a.price.currency.localeCompare(b.price.currency)||(a.price.amount-b.price.amount)*(input.sort==='price-asc'?1:-1);
       });
       else products.sort((a,b)=>Number(a.dataMode==='demo')-Number(b.dataMode==='demo'));
+      deps.onProducts?.(products);
       if(!res.destroyed)res.json({products,sources:sources.sort((a,b)=>a.source.localeCompare(b.source)),page:input.page,hasMore,links:retailerLinks(input)});
     }finally{clearTimeout(timeout);res.off('close',close);active--;}
   });

@@ -100,6 +100,24 @@ export function createLiveService({ apiOrigin, getToken, fetchImpl, createFormDa
       return { candidates: body.candidates, notice: typeof body.notice === 'string' ? body.notice : '' };
     },
 
+    async generateProductPreview({photo, referencePhoto, room, candidate, target, focus, description, requestId, inputVersion, signal}) {
+      if (!photo?.uploadReady) throw apiError('INVALID_INPUT', photo?.prepError || 'Choose a room photo that can be uploaded.', false);
+      const form = createFormData();
+      form.append('metadata', JSON.stringify({requestId,inputVersion,optionId:candidate.id,room:roomPayload(room),target,focus,description}));
+      for (const [name, image] of [['photo',photo],['reference',referencePhoto]]) {
+        if (!image) continue;
+        if (!image.uploadReady) throw apiError('INVALID_INPUT','Choose a smaller product reference photo.',false);
+        if (typeof document !== 'undefined') {
+          const response=await doFetch(image.uri,{signal});
+          if(!response.ok)throw apiError('INVALID_INPUT','The chosen photo could not be read. Choose it again.',false);
+          form.append(name,await response.blob(),`${name}.jpg`);
+        } else form.append(name,{uri:image.uri,type:'image/jpeg',name:`${name}.jpg`});
+      }
+      const body=await call('/product-preview',{method:'POST',headers:authHeader(),body:form},limits.preview,{outerSignal:signal,timeoutError:apiError('PROVIDER_TIMEOUT','The furniture preview timed out. Retry this candidate.',true)});
+      if(!body?.imageBase64 || !IMAGE_MIME_TYPES.includes(body.mimeType) || body.mode!=='live')throw apiError('INVALID_OUTPUT','The preview image could not be read.',true);
+      return {...body,imageSource:{uri:`data:${body.mimeType};base64,${body.imageBase64}`}};
+    },
+
     async generatePreview({ photo, room, request, candidate, requestId, inputVersion, signal }) {
       if (photo?.source !== 'user') throw apiError('INVALID_INPUT', 'Live previews need your own room photo.', false);
       if (!photo.uploadReady) {

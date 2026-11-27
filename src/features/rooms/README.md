@@ -17,7 +17,7 @@ The root `App.js` now mounts `RoomJourney` on `feature/home-fit-comparison`. The
 
 Retailer code remains in `mobile/FurnitureDiscovery.js`, `shared/discovery.ts`, and `server/src/discovery/`. Those files are unmodified. `FurnitureForYou` consumes the existing authenticated `GET /products` endpoint; Search all stores opens the existing teammate screen. Only the current returned catalog page is ranked. Live errors are shown rather than replaced with fake live results; local sample catalogs are labeled.
 
-Photo preview still uses the existing server-owned four-product catalog, and saved sample illustrations only support the two sofas and exact sample scenario. Other retailer products can be saved and compared but cannot yet be photo-generated. `previewOptionId` identifies supported items. Selecting a supported item filters preview results to that specific ID. Generated photos are visual estimates, not measured layouts; editing placement coordinates does not regenerate them.
+Photo visualization now accepts any product returned by the registered retailer catalog. Select up to two candidates, tap each furniture base target on the room photo, and generate independently from the same original image. The server retrieves the registered retailer reference from approved image hosts; a user-uploaded product photo can replace missing/unavailable references. The new `/product-preview` route supports all product categories, image-based target points and rotation. Images remain approximate; measured fit checks are separate. The older saved sofa illustrations remain available via an explicit no-API button.
 
 ## OpenAI style selection
 
@@ -48,3 +48,5 @@ No new automated test files were added. Use the actual sample path to review the
 ## Retailer branch merge
 
 `origin/feature/retailer-data` is merged into this feature branch. `retailerEvidence.ts` bridges its evidence arrays, shipping length/quantity/count, materials and care into the evaluator. Conflicting package facts remain confirmation-needed. Destination-dependent delivery stays unknown. IKEA records are verified snapshots, not live search or preview-enabled products. Main remains unchanged.
+
+`IMAGE_MODEL` defaults to `gpt-image-1.5` when not configured. Product image uploads and generation use the existing session token and shared preview rate/concurrency limits. Product IDs must exist in the server catalog; arbitrary client image URLs are not accepted.

@@ -27,7 +27,7 @@ const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 export function defaultRequestId(optionId) {
   const random = Math.random().toString(36).slice(2, 10);
-  return `${optionId}-${Date.now().toString(36)}-${random}`.slice(0, 100);
+  return `${optionId.replace(/[^a-zA-Z0-9_-]/g, "-").slice(0,65)}-${Date.now().toString(36)}-${random}`.slice(0, 100);
 }
 
 export function normalizeError(error) {

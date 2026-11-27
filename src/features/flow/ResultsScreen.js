@@ -88,13 +88,13 @@ function CandidateCard({ candidate, letter, index, total, result, saved, origina
   const status = result?.status ?? 'waiting';
   const showFurnished = status === 'ready' && view === 'furnished';
   const source = showFurnished ? result.imageSource : originalSource;
-  const dims = [candidate.widthCm, candidate.depthCm, candidate.heightCm].filter(Boolean).join(' × ');
+  const dims = [candidate.widthCm, candidate.depthCm, candidate.heightCm].map(value => value ?? '?').join(' × ');
 
   return (
     <View style={ui.card}>
       <Text style={ui.eyebrow}>OPTION {letter}</Text>
       <Text style={ui.sectionTitle}>{candidate.name}</Text>
-      <Text style={[ui.hint, { marginTop: 4 }]}>{dims} cm ({candidate.heightCm ? 'W × D × H' : 'W × D'}) · fictional demo furniture</Text>
+      <Text style={[ui.hint, { marginTop: 4 }]}>{dims} cm (W × D × H) · {candidate.catalogProduct && candidate.dataMode !== 'demo' ? 'selected retailer product' : 'fictional demo furniture'}</Text>
       {candidate.matchReason ? <Text style={[ui.hint, { marginTop: 4 }]}>{candidate.matchReason}</Text> : null}
 
       {status === 'ready' ? (

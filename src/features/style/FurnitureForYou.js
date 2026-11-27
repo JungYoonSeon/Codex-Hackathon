@@ -236,21 +236,8 @@ export default function FurnitureForYou({
               disabled={!room || room.products.some((v) => v.id === p.id)}
               onPress={() => onSave(p)}
             />
-            {p.previewOptionId ? (
-              <Button
-                small
-                title="Visualize"
-                onPress={() => onTry(p)}
-                disabled={!room}
-              />
-            ) : null}
+            <Button small title="Visualize" onPress={() => onTry(p)} disabled={!room}/>
           </View>
-          {!p.previewOptionId ? (
-            <Text style={s.small}>
-              Save for measured comparison. Photo generation for this catalog
-              item is not connected yet.
-            </Text>
-          ) : null}
         </View>
       ))}
       <Button

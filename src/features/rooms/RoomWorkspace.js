@@ -98,9 +98,8 @@ export default function RoomWorkspace({
               title="Set placement"
               onPress={() => onPlacement(p.id)}
             />
-            {p.previewOptionId ? (
-              <Button small title="Visualize" onPress={() => onTry(p)} />
-            ) : null}
+            <Button small title="Visualize" onPress={() => onTry(p)}/>
+
             <Button
               small
               secondary

@@ -1,3 +1,6 @@
+import { createProductRegistry } from './product-preview/registry.ts';
+import { createProductPreviewRouter } from './product-preview/router.ts';
+import type { ProductEditor } from './product-preview/editor.ts';
 import express from 'express';
 import { createStyleRouter, type StyleRanker } from './style/recommendations.ts';
 import multer from 'multer';
@@ -13,7 +16,7 @@ import { validateOutput, type ImageEditor } from './provider.ts';
 
 export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 export interface AppConfig {
-  sessionToken: string; editor?: ImageEditor; styleRanker?: StyleRanker; allowedOrigin?: string;
+  sessionToken: string; editor?: ImageEditor; styleRanker?: StyleRanker; productEditor?: ProductEditor; allowedOrigin?: string;
   timeoutMs?: number; maxConcurrent?: number; maxPreviewsPerHour?: number;
 }
 export function createApp(config: AppConfig) {
@@ -35,7 +38,7 @@ export function createApp(config: AppConfig) {
     }
     next();
   });
-  app.get('/health', (_req, res) => res.json({ status: 'ok', liveConfigured: !!config.editor, provider: 'OpenAI' }));
+  app.get('/health', (_req, res) => res.json({ status: 'ok', liveConfigured: !!config.editor, productPreviewConfigured: !!config.productEditor, provider: 'OpenAI' }));
   const authenticate: RequestHandler = (req, _res, next) => {
     const supplied = Buffer.from(req.headers.authorization ?? '');
     const expected = Buffer.from(`Bearer ${config.sessionToken}`);
@@ -43,7 +46,8 @@ export function createApp(config: AppConfig) {
       return next(new AppError(401, 'UNAUTHORIZED', 'Enter the current restricted demo-session token.'));
     next();
   };
-  app.use('/products', authenticate, createDiscoveryRouter());
+  const registry=createProductRegistry();
+  app.use('/products', authenticate, createDiscoveryRouter({onProducts:registry.remember}));
   app.use('/style-recommendations', authenticate, createStyleRouter(config.styleRanker));
   app.post('/recommendations', authenticate, express.json({ limit: '16kb' }), (req, res) => {
     const input = parse(recommendationsSchema, req.body);
@@ -59,6 +63,13 @@ export function createApp(config: AppConfig) {
     res.on('close', () => { if (!res.locals.jobStarted) res.locals.release(); });
     next();
   };
+  const useBudget=(requestId:string,res:express.Response)=>{
+    if(Date.now()-windowStart>=3600000){used=0;seen.clear();windowStart=Date.now();}
+    if(seen.has(requestId))throw new AppError(409,'DUPLICATE_REQUEST','This attempt ID was already used. Retry with a fresh ID.');
+    if(used>=maxPreviews)throw new AppError(429,'RATE_LIMITED','The session has reached its hourly preview limit.',true);
+    used++;seen.add(requestId);
+  };
+  app.use('/product-preview',authenticate,createProductPreviewRouter({registry,editor:config.productEditor,acquire,useBudget,timeoutMs}));
   const upload = multer({ storage: multer.memoryStorage(), limits: {
     fileSize: MAX_UPLOAD_BYTES, files: 1, fields: 1, parts: 2, fieldSize: 8192, fieldNameSize: 100,
   }, fileFilter: (_req, file, cb) => {
@@ -88,12 +99,8 @@ export function createApp(config: AppConfig) {
       roomJpeg = await image.rotate().resize({ width: 1280, height: 1280, fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 85 }).toBuffer();
     } catch { throw new AppError(400, 'INVALID_INPUT', 'The JPEG is unreadable or too large in pixel dimensions. Choose another photo.'); }
     if (!config.editor) throw new AppError(503, 'LIVE_UNAVAILABLE', 'Live preview is unavailable. The operator must configure and verify OpenAI access. Saved examples are only available for the supplied sample.');
-    if (Date.now() - windowStart >= 3_600_000) { used = 0; seen.clear(); windowStart = Date.now(); }
-    if (seen.has(input.requestId)) throw new AppError(409, 'DUPLICATE_REQUEST', 'This attempt ID was already used. Explicitly retry with a new requestId.');
-    if (used >= maxPreviews) { res.setHeader('Retry-After', String(Math.ceil((windowStart + 3_600_000 - Date.now()) / 1000)));
-      throw new AppError(429, 'RATE_LIMITED', 'The demo session has reached its hourly preview limit. Try later.', true); }
     if (res.destroyed) return;
-    used++; seen.add(input.requestId); res.locals.jobStarted = true;
+    useBudget(input.requestId,res);res.locals.jobStarted=true;
     const controller = new AbortController();
     const disconnect = () => { if (!res.writableEnded) controller.abort(); };
     res.on('close', disconnect);
