@@ -1,0 +1,8 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true
+  },
+  "include": ["App.js", "src/**/*", "shared/**/*.ts"],
+  "exclude": ["node_modules", "server", "furniture-fit", "src/**/__tests__/**"]
+}
