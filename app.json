@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "RoomReady",
+    "slug": "roomready",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#F7F5F0"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#F7F5F0"
+      }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "RoomReady uses your camera to add a room photo for visual reference. The photo stays on this device.",
+          "photosPermission": "RoomReady uses a selected photo as a visual reference. The photo stays on this device."
+        }
+      ]
+    ]
+  }
+}
